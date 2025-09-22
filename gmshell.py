@@ -160,7 +160,7 @@ class GMShell(cmd.Cmd):
 		if self.last >= len(initorder):
 			self.last = 0
 
-		if arg is "list" or len(arg) == 0:
+		if arg == "list" or len(arg) == 0:
 			i = 1
 			for c in initorder:
 				print("{} {}".format(i, c.getName()))
