@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import cmd, sys
 import csv
 import pickle
@@ -10,17 +11,25 @@ class GMShell(cmd.Cmd):
 	intro = 'Welcome to the GM Shell, a utility to help Game Masters manage game play'
 	prompt = '(cmd) '
 	file = None
-	last = 0
-	players = dict()
+	nextp = 0
+	players = list()
 	mobs = dict()
 
 	def do_quit(self, arg):
 		'Exit GM Shell'
 		return True
 
+	def findPlayer(self, pn):
+		for p in self.players:
+			if p.getNick() == pn or p.getName() == pn:
+				return p
+		return None
+
+
 	def do_player(self, arg):
 		'Set player information'
-		p = parse(arg)
+
+		p = parse(arg.replace("'",'"'))
 
 		pn = p.pop(0).lower();
 		c = "unknown"
@@ -30,43 +39,51 @@ class GMShell(cmd.Cmd):
 		inv = 0
 		ins = 0
 		init = 0
-		exists = pn in self.players
+		nick = None
+
+		player = self.findPlayer(pn)
 		for i in p:
 			n,v = i.split('=')
 			n = n.lower()
 			if (n.startswith('c')):
 				c = v
-				if exists:
-					  self.players[pn].setClass(c)
+				if player is not None:
+					  player.setClass(c)
 			elif (n.startswith('l')):
 				l = int(v)
-				if exists:
-					self.players[pn].setLevel(l)
+				if player is not None:
+					player.setLevel(l)
 			elif (n.startswith('a')):
 				a = int(v)
-				if exists:
-					self.players[pn].setAC(a)
+				if player is not None:
+					player.setAC(a)
 			elif (n.startswith('ini')):
 				init = int(v)
-				if exists:
-					self.players[pn].setInitiative(init)
+				if player is not None:
+					player.setInitiative(init)
 			elif (n.startswith('per')):
 				per = int(v)
-				if exists:
-					self.players[pn].setPerception(per)
+				if player is not None:
+					player.setPerception(per)
 			elif (n.startswith('inv')):
 				inv = int(v)
-				if exists:
-					self.players[pn].setInvestigation(inv)
+				if player is not None:
+					player.setInvestigation(inv)
 			elif (n.startswith('ins')):
 				ins = int(v)
-				if exists:
-					self.players[pn].setInsight(ins)
+				if player is not None:
+					player.setInsight(ins)
+			elif (n.startswith('nick')):
+				nick = v
+				if player is not None:
+					player.setNick(nick)
 
-		if not exists:
-			player = Player(pn, pclass=c, level=l, ac=a, per=per, inv=inv, ins=ins, init=init)
-			self.players[player.getName()] = player
-		print("Player \'{}\' {}".format(pn, 'updated' if exists else 'added'))
+		if player is None:
+			player = Player(pn, pclass=c, level=l, ac=a, per=per, inv=inv, ins=ins, init=init, nick=nick)
+			self.players.append(player)
+			print("Player \'{}\' added".format(pn))
+		else:
+			print("Player \'{}\' updated".format(pn))
 
 	def do_mob(self, arg):
 		'Set mob information'
@@ -112,7 +129,7 @@ class GMShell(cmd.Cmd):
 			print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'))
 
 	def do_players(self, arg):
-		plist = sorted(self.players.values(),reverse=True)
+		plist = sorted(self.players,reverse=True)
 		if arg.startswith("save"):
 			c,fn = arg.split(" ")
 			print("saving players to {}".format(fn))
@@ -146,32 +163,33 @@ class GMShell(cmd.Cmd):
 			print("loading mobs from {}".format(f))
 			self.mobs = self.load(f)
 			self.do_mobs("list")
+		elif arg.startswith("cl"):
+			self.mobs = dict()
 		else:
 			for m in mlist:
 				m.print(sys.stdout)
 				print()
 
 	def initiative(self, arg):
-		plist = sorted(self.players.values(),reverse=True)
+		plist = sorted(self.players,reverse=True)
 		mlist = sorted(self.mobs.values(),reverse=True)
 		combatants = list(plist)
 		combatants.extend(mlist)
 		initorder = sorted(combatants, reverse=True)
-		if self.last >= len(initorder):
-			self.last = 0
+		self.nextp = self.nextp % len(initorder)
 
 		if arg == "list" or len(arg) == 0:
-			i = 1
-			for c in initorder:
-				print("{} {}".format(i, c.getName()))
-				i += 1
+			for c in initorder[self.nextp:]:
+				print("{} {}".format(c.getName(),c.getInitiative()))
+			for c in initorder[:self.nextp]:
+				print("{} {}".format(c.getName(),c.getInitiative()))
 		
-		elif arg == "clear":
-			self.last = 0
+		elif arg == "clear" or arg == 'reset':
+			self.nextp = 0
 
 		elif arg == "next":
-			print(initorder[self.last].getName())
-			self.last += 1
+			print(initorder[self.nextp].getName())
+			self.nextp += 1
 
 	def do_initiative(self,arg):
 		self.initiative(arg)
