@@ -29,6 +29,7 @@ class GMShell(cmd.Cmd):
 					return p
 		except:
 			print("error locating player {}".format(pn))
+
 		return None
 
 
@@ -155,25 +156,29 @@ class GMShell(cmd.Cmd):
 			print("Got exception {} trying to process {}".format(ex,arg))
 
 	def do_players(self, arg):
+		'Manage players (list, load, save)'
 		try:
 			plist = sorted(self.players,reverse=True)
-			if arg.startswith("save"):
-				c,fn = arg.split(" ")
-				print("saving players to {}".format(fn))
-				self.save(self.players,fn)
-			elif arg.startswith("load"):
-				c,fn = arg.split(" ")
-				print("loading players from {}".format(fn))
-				pl = self.load(fn)
-				if pl is not None:
-					for p in pl:
-						if self.findPlayer(p.getName()) is None:
-							self.players.append(p)
-				self.do_players("list")
-			else:
-				for p in plist:
-					p.print(sys.stdout)
-					print()
+
+			match(arg):
+				case "save":
+					c,fn = arg.split(" ")
+					print("saving players to {}".format(fn))
+					self.save(self.players,fn)
+				case "load":
+					c,fn = arg.split(" ")
+					print("loading players from {}".format(fn))
+					pl = self.load(fn)
+					if pl is not None:
+						for p in pl:
+							if self.findPlayer(p.getName()) is None:
+								self.players.append(p)
+					self.do_players("list")
+				case _:
+					for p in plist:
+						p.print(sys.stdout)
+						print()
+
 		except Exception as ex:
 			print("Got exception {} trying to process {}".format(ex,arg))
 
@@ -193,32 +198,38 @@ class GMShell(cmd.Cmd):
 			return None
 
 	def do_mobs(self, arg):
+		'manage monsters (load, save, list, roll, clear)'
 		try:
 			mlist = sorted(self.mobs.values(),reverse=True)
-			if arg.startswith("save"):
-				c,f = arg.split(" ")
-				print("saving mobs to {}".format(f))
-				self.save(self.mobs,f)
-			elif arg.startswith("load"):
-				c,f = arg.split(" ")
-				print("loading mobs from {}".format(f))
-				m = self.load(f)
-				if m is not None:
-					self.mobs.update(m)
-				self.do_mobs("list")
-			elif arg.startswith("cl"):
-				self.mobs = dict()
-			elif arg.startswith('ro'):
-				for m in mlist:
-					m.rollInit()
-			else:
-				for m in mlist:
-					m.print(sys.stdout)
-					print()
+			if len(arg) == 0:
+				arg = "list"
+			args = arg.split(" ")
+			match(args[0]):
+				case "save":
+					f = arg[1]
+					print("saving mobs to {}".format(f))
+					self.save(self.mobs,f)
+				case "load":
+					f = arg[1]
+					print("loading mobs from {}".format(f))
+					m = self.load(f)
+					if m is not None:
+						self.mobs.update(m)
+					self.do_mobs("list")
+				case "clear":
+					self.mobs = dict()
+				case "roll" | "r" | "ro":
+					for m in mlist:
+						m.rollInit()
+				case _:
+					for m in mlist:
+						m.print(sys.stdout)
+						print()
 		except Exception as ex:
 			print("Got exception {} trying to process {}".format(ex,arg))
 
 	def initiative(self, arg):
+		'Manage initiative (list, next, clear|reset, roll (for mobs)'
 		try:
 			plist = sorted(self.players,reverse=True)
 			mlist = sorted(self.mobs.values(),reverse=True)
@@ -227,18 +238,20 @@ class GMShell(cmd.Cmd):
 			initorder = sorted(combatants, reverse=True)
 			self.nextp = self.nextp % len(initorder)
 
-			if arg == "list" or len(arg) == 0:
-				for c in initorder[self.nextp:]:
-					print("{} {}".format(c.getName(),c.getInitiative()))
-				for c in initorder[:self.nextp]:
-					print("{} {}".format(c.getName(),c.getInitiative()))
-			
-			elif arg == "clear" or arg == 'reset':
-				self.nextp = 0
+			match (arg):
+				case "clear" | "reset":	 		
+					self.nextp = 0
 
-			elif arg == "next":
-				print(initorder[self.nextp].getName())
-				self.nextp += 1
+				case "next":
+					print(initorder[self.nextp].getName())
+					self.nextp += 1
+
+				case _:
+					for c in initorder[self.nextp:]:
+						print("{} {}".format(c.getName(),c.getInitiative()))
+					for c in initorder[:self.nextp]:
+						print("{} {}".format(c.getName(),c.getInitiative()))
+
 		except Exception as ex:
 			print("Got exception {} trying to process {}".format(ex,arg))
 
