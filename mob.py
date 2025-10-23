@@ -15,6 +15,12 @@ class Mob(combatant.Combatant):
 	def setHP(self, arg):
 		self.hp = arg
 
+	def setName(self,n):
+		self.n = n
+
+	def getName(self):
+		return self.n
+
 	def getBonus(self):
 		return self.bonus
 
@@ -31,3 +37,5 @@ class Mob(combatant.Combatant):
 		print("Name: {}".format(self.n),file=out)
 		print("AC: {} HP: {} Initiative: {} ".format(self.ac,self.hp, self.init),file=out)
 
+	def copy(self):
+		return Mob(self.n, self.hp, self.ac, self.init, self.bonus)

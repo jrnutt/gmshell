@@ -103,55 +103,72 @@ class GMShell(cmd.Cmd):
 			p = parse(arg)
 
 			mn = p.pop(0).lower();
-			if p[0] == "delete" and mn in self.mobs:
-				del self.mobs[mn]
-				print("Mob \'{}\' removed".format(mn))
-			else:
-				a = 0
-				h = 0
-				init = 0
-				exists = mn in self.mobs
-				for i in p:
-					try:
-						n,v = i.split('=')
-						n = n.lower()
-						if (n.startswith('a')):
-							a = int(v)
-							if exists:
-								self.mobs[mn].setAC(a)
-						elif (n.startswith('i')):
-							init = int(v)
+			if len(p) > 0:
+				if p[0] == "delete" and mn in self.mobs:
+					del self.mobs[mn]
+					print("Mob \'{}\' removed".format(mn))
+				elif p[0] == "copy" and mn in self.mobs:
+					m = self.mobs[mn].copy()
+					i = 1
+					r = mn
+					if '-' in mn:
+						r,c = mn.split('-')
+						if c.isnumeric():
+							i = int(c)
+					n = r + '-' + str(i)
+					while (n in self.mobs):
+						i += 1
+						n = r + '-' + str(i)
+					m.setName(n)
+					self.mobs[n] = m
+					print("Mob \'{}\' added".format(n))
+					mn = n
+				else:
+					a = 0
+					h = 0
+					init = 0
+					exists = mn in self.mobs
+					for i in p:
+						try:
+							n,v = i.split('=')
+							n = n.lower()
+							if (n.startswith('a')):
+								a = int(v)
+								if exists:
+									self.mobs[mn].setAC(a)
+							elif (n.startswith('i')):
+								init = int(v)
 
-							if exists:
-								self.mobs[mn].setInitiative(init)
-						elif (n.startswith('h')):
-							h = int(v)
-							if exists:
-								self.mobs[mn].setHP(h)
-						elif (n.startswith('b')):
-							b = int(v)
-							if exists:
-								self.mobs[mn].setBonus(b)
-						elif (n.startswith('-h')):
-							h = int(v)
-							if exists:
-								self.mobs[mn].setHP(self.mobs[mn].getHP() - h)
-							if self.mobs[mn].getHP() < 1:
-								print("{} is dead".format(mn))
-								del self.mobs[mn]
-						elif (n.startswith('+h')):
-							h = int(v)
-							if exists:
-								self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
-					except ValueError:
-						print("Missing or bad value in {}".format(i))
+								if exists:
+									self.mobs[mn].setInitiative(init)
+							elif (n.startswith('h')):
+								h = int(v)
+								if exists:
+									self.mobs[mn].setHP(h)
+							elif (n.startswith('b')):
+								b = int(v)
+								if exists:
+									self.mobs[mn].setBonus(b)
+							elif (n.startswith('-h')):
+								h = int(v)
+								if exists:
+									self.mobs[mn].setHP(self.mobs[mn].getHP() - h)
+								if self.mobs[mn].getHP() < 1:
+									print("{} is dead".format(mn))
+									del self.mobs[mn]
+							elif (n.startswith('+h')):
+								h = int(v)
+								if exists:
+									self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
+						except ValueError:
+							print("Missing or bad value in {}".format(i))
 
-				if not exists:
-					mob = Mob(mn, ac=a, hp=h, init=init)
-					self.mobs[mob.getName()] = mob
-				print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'))
-				if mn in self.mobs:
-					self.mobs[mn].print(sys.stdout)
+					if not exists:
+						mob = Mob(mn, ac=a, hp=h, init=init)
+						self.mobs[mob.getName()] = mob
+					print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'))
+			if mn in self.mobs:
+				self.mobs[mn].print(sys.stdout)
 		except Exception as ex:
 			print("Got exception {} trying to process {}".format(ex,arg))
 
@@ -235,6 +252,8 @@ class GMShell(cmd.Cmd):
 			mlist = sorted(self.mobs.values(),reverse=True)
 			combatants = list(plist)
 			combatants.extend(mlist)
+			if len(combatants) < 1:
+				return
 			initorder = sorted(combatants, reverse=True)
 			self.nextp = self.nextp % len(initorder)
 
@@ -276,5 +295,7 @@ if __name__ == '__main__':
 		with open('.gmshell.history','w'):
 			print("no history to load")
 	GMShell().cmdloop()
-	readline.write_history_file('.gmshell.history')
-
+	try: 
+		readline.write_history_file('.gmshell.history')
+	except:
+		print("failed to save history")
