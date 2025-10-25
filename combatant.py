@@ -1,8 +1,12 @@
+import sys
+
 class Combatant:
-	def __init__(self, n, hp=0, ac=0, init=0.0):
+	def __init__(self, n, hp=0, ac=0, init=0.0, conditions=[]):
 		self.n = n
 		self.ac = ac
+		self.hp = hp
 		self.init = init
+		self.conditions = set(conditions)
 
 	def getName(self):
 		return self.n
@@ -28,9 +32,22 @@ class Combatant:
 	def getHP(self):
 		return self.hp
 
-	def print(self, out):
-		print("Name: {}".format(self.n),file=out)
-		print("AC: {} HP: {} Initiative: {} ".format(self.ac, self.init),file=out)
+	def getConditions(self):
+		return self.conditions
+
+	def setConditions(self, conditions):
+		self.conditions = conditions
+
+	def addCondition(self, condition):
+		self.conditions.add(condition)
+
+	def remCondition(self, condition):
+		self.conditions.remove(condition)
+
+	def print(self, file=sys.stdout):
+		print("Name: {}".format(self.getName()), file=file)
+		print("AC: {} HP: {} Initiative: {} ".format(self.getAC(), self.getHP(), self.getInitiative()), file=file)
+		print("Conditions: {}".format(self.conditions), file=file)
 
 	def __lt__(self, arg):
 		return self.getInitiative() < arg.getInitiative()

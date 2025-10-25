@@ -3,11 +3,8 @@ import secrets
 import sys
 
 class Mob(combatant.Combatant):
-	def __init__(self, n, hp=0, ac=0, init=0.0, bonus=0):
-		self.hp = hp
-		self.n = n
-		self.ac = ac
-		self.init = init
+	def __init__(self, n, hp=0, ac=0, init=0.0, bonus=0, conditions=[]):
+		super().__init__(n=n, hp=hp, ac=ac, init=init, conditions=conditions)
 		self.bonus = bonus
 
 	def getBonus(self):
@@ -20,8 +17,8 @@ class Mob(combatant.Combatant):
 		self.init = secrets.choice(range(20)) + 1 + self.bonus
 
 	def print(self, file=sys.stdout):
-		print("Name: {}".format(self.n),file=file)
-		print("AC: {} HP: {} Initiative: {} ".format(self.ac,self.hp, self.init),file=file)
+		print("Name: {}".format(self.getName()),file=file)
+		print("AC: {} HP: {} Initiative: {} ".format(self.getAC(),self.getHP(), self.getInitiative()),file=file)
 
 	def write(self, file=sys.stdout):
 		print("mob {self.n} ac={self.ac} hp={self.hp} bonus={self.bonus} init={self.init}".format(self=self),file=file)

@@ -53,13 +53,14 @@ class GMShell(cmd2.Cmd):
 					if i == 'write':
 						player.write(self.stdout)
 						return
+				else:
+					print("Adding new player {}".format(pn), file=self.stdout)
+					player = Player(pn, pclass='', level='', ac=0, per=0, inv=0, ins=0, init=0.0, nick='')
 
 				if i in ['delete','write']:
 					print("player {} does not exist".format(pn), file=self.stdout)
 					return
 
-				print("Adding new player {}".format(pn), file=self.stdout)
-				player = Player(pn, pclass='', level='', ac=0, per=0, inv=0, ins=0, init=0.0, nick='')
 
 				n,v = i.split('=')
 				n = n.lower()
@@ -82,11 +83,16 @@ class GMShell(cmd2.Cmd):
 				elif (n.startswith('nick')):
 					player.setNick(v)
 
-			if self.findPlayer(pn) is None:
+			p = self.findPlayer(pn)
+			if self.findPlayer(p) is None:
 				self.players.append(player)
+				p = player
 				print("Player \'{}\' added".format(pn),file=self.stdout)
 			else:
 				print("Player \'{}\' updated".format(pn),file=self.stdout)
+
+			p.print(file=self.stdout)
+
 		except Exception as ex:
 			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
@@ -128,13 +134,15 @@ class GMShell(cmd2.Cmd):
 
 					print("Updating mob {}".format(mn), file=self.stdout)
 					mob = self.mobs[mn]
+				else:
+					mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
+					print("Adding new mob {}".format(mn), file=self.stdout)
+
+
 
 				if p[0] in ["copy","delete","write"]:
 					print("mob {} does not exist".format(mn), file=self.stdout)
 					return
-
-				mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
-				print("Adding new mob {}".format(mn), file=self.stdout)
 
 
 				for i in p:
