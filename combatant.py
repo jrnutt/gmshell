@@ -22,6 +22,12 @@ class Combatant:
 	def setInitiative(self,arg):
 		self.init = arg
 
+	def setHP(self,arg):
+		self.hp = arg
+
+	def getHP(self):
+		return self.hp
+
 	def print(self, out):
 		print("Name: {}".format(self.n),file=out)
 		print("AC: {} HP: {} Initiative: {} ".format(self.ac, self.init),file=out)

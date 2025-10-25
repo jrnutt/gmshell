@@ -10,26 +10,11 @@ class Mob(combatant.Combatant):
 		self.init = init
 		self.bonus = bonus
 
-	def getHP(self):
-		return self.hp
-
-	def setHP(self, arg):
-		self.hp = arg
-
-	def setName(self,n):
-		self.n = n
-
-	def getName(self):
-		return self.n
-
 	def getBonus(self):
 		return self.bonus
 
 	def setBonus(self, arg):
-		try: 
-			self.bonus = int(arg)
-		except:
-			self.bonus=0
+		self.bonus = arg
 
 	def rollInit(self):
 		self.init = secrets.choice(range(20)) + 1 + self.bonus

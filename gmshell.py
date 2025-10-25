@@ -7,8 +7,6 @@ from io import StringIO
 from player import Player
 from mob import Mob
 
-from cmd2 import Cmd2ArgumentParser, with_argparser, with_argument_list
-
 class GMShell(cmd2.Cmd):
 	intro = 'Welcome to the GM Shell, a utility to help Game Masters manage game play'
 	prompt = '(cmd) '
@@ -32,7 +30,7 @@ class GMShell(cmd2.Cmd):
 				if p.getNick() == pn or p.getName() == pn:
 					return p
 		except:
-			print("error locating player {}".format(pn),file=self.stdout)
+			print("error locating player {}".format(pn), self.stdout)
 
 		return None
 
@@ -44,63 +42,47 @@ class GMShell(cmd2.Cmd):
 
 			pn = cmd2.utils.strip_quotes(arguments.pop(0))
 
-			c = "unknown"
-			l = 0
-			a = 0
-			per = 0
-			inv = 0
-			ins = 0
-			init = 0
-			nick = None
-
 			player = self.findPlayer(pn)
 			for i in arguments:
-				if i == 'delete':
-					self.players.remove(player)
-					print("{} deleted".format(player.getName()),file=self.stdout)
+				if player is not None:
+					if i == 'delete':
+						self.players.remove(player)
+						print("{} deleted".format(player.getName()), file=self.stdout)
+						return
+
+					if i == 'write':
+						player.write(self.stdout)
+						return
+
+				if i in ['delete','write']:
+					print("player {} does not exist".format(pn), file=self.stdout)
 					return
 
-				if i == 'write':
-					player.write(self.stdout)
-					return
+				print("Adding new player {}".format(pn), file=self.stdout)
+				player = Player(pn, pclass='', level='', ac=0, per=0, inv=0, ins=0, init=0.0, nick='')
 
 				n,v = i.split('=')
 				n = n.lower()
 				if (n.startswith('c')):
-					c = v
-					if player is not None:
-						  player.setClass(c)
+					player.setClass(v)
 				elif (n.startswith('l')):
-					l = v
-					if player is not None:
-						player.setLevel(l)
+					player.setLevel(v)
 				elif (n.startswith('a')):
-					a = int(v)
-					if player is not None:
-						player.setAC(a)
+					player.setAC(int(v))
+				elif (n.startswith('h')):
+					player.setHP(int(v))
 				elif (n.startswith('ini')):
-					init = float(v)
-					if player is not None:
-						player.setInitiative(init)
+					player.setInitiative(float(v))
 				elif (n.startswith('per')):
-					per = int(v)
-					if player is not None:
-						player.setPerception(per)
+					player.setPerception(int(v))
 				elif (n.startswith('inv')):
-					inv = int(v)
-					if player is not None:
-						player.setInvestigation(inv)
+					player.setInvestigation(int(v))
 				elif (n.startswith('ins')):
-					ins = int(v)
-					if player is not None:
-						player.setInsight(ins)
+					player.setInsight(int(v))
 				elif (n.startswith('nick')):
-					nick = v
-					if player is not None:
-						player.setNick(nick)
+					player.setNick(v)
 
-			if player is None:
-				player = Player(pn, pclass=c, level=l, ac=a, per=per, inv=inv, ins=ins, init=init, nick=nick)
+			if self.findPlayer(pn) is None:
 				self.players.append(player)
 				print("Player \'{}\' added".format(pn),file=self.stdout)
 			else:
@@ -116,76 +98,72 @@ class GMShell(cmd2.Cmd):
 
 			mn = cmd2.utils.strip_quotes(p.pop(0).lower());
 			if len(p) > 0:
-				if p[0] == "delete" and mn in self.mobs:
-					del self.mobs[mn]
-					print("Mob \'{}\' removed".format(mn))
-				elif p[0] == "copy" and mn in self.mobs:
-					m = self.mobs[mn].copy()
-					i = 1
-					r = mn
-					if '-' in mn:
-						r,c = mn.split('-')
-						if c.isnumeric():
-							i = int(c)
-					n = r + '-' + str(i)
-					while (n in self.mobs):
-						i += 1
-						n = r + '-' + str(i)
-					m.setName(n)
-					self.mobs[n] = m
-					print("Mob \'{}\' added".format(n),file=self.stdout)
-					mn = n
-				elif p[0] == "write":
-					self.mobs[mn].write(self.stdout)
-					return
-				else:
-					a = 0
-					h = 0
-					init = 0
-					exists = mn in self.mobs
-					for i in p:
-						try:
-							n,v = i.split('=')
-							n = n.lower()
-							if (n.startswith('a')):
-								a = int(v)
-								if exists:
-									self.mobs[mn].setAC(a)
-							elif (n.startswith('i')):
-								init = float(v)
-								if exists:
-									self.mobs[mn].setInitiative(init)
-							elif (n.startswith('h')):
-								h = int(v)
-								if exists:
-									if  v.startswith('-') or v.startswith('+'):
-										self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
-									else:
-										self.mobs[mn].setHP(h)
-							elif (n.startswith('b')):
-								b = int(v)
-								if exists:
-									self.mobs[mn].setBonus(b)
-							elif (n.startswith('-h')):
-								h = int(v)
-								if exists:
-									self.mobs[mn].setHP(self.mobs[mn].getHP() - h)
-							elif (n.startswith('+h')):
-								h = int(v)
-								if exists:
-									self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
-						except ValueError:
-							print("Missing or bad value in {}".format(i),file=self.stdout)
-
-					if not exists:
-						mob = Mob(mn, ac=a, hp=h, init=init, bonus=b)
-						self.mobs[mob.getName()] = mob
-
-					print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'),file=self.stdout)
-
-					if self.mobs[mn].getHP() <= 0:
-						print("{} is dead".format(mn))
+				if mn in self.mobs:
+					if p[0] == "delete":
 						del self.mobs[mn]
+						print("Mob \'{}\' removed".format(mn))
+						return
+
+					if p[0] == "copy":
+						m = self.mobs[mn].copy()
+						i = 1
+						r = mn
+						if '-' in mn:
+							r,c = mn.split('-')
+							if c.isnumeric():
+								i = int(c)
+						n = r + '-' + str(i)
+						while (n in self.mobs):
+							i += 1
+							n = r + '-' + str(i)
+						m.setName(n)
+						self.mobs[n] = m
+						print("Mob \'{}\' added".format(n),file=self.stdout)
+						mn = n
+						return
+
+					if p[0] == "write":
+						self.mobs[mn].write(self.stdout)
+						return
+
+					print("Updating mob {}".format(mn), file=self.stdout)
+					mob = self.mobs[mn]
+
+				if p[0] in ["copy","delete","write"]:
+					print("mob {} does not exist".format(mn), file=self.stdout)
+					return
+
+				mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
+				print("Adding new mob {}".format(mn), file=self.stdout)
+
+
+				for i in p:
+					try:
+						n,v = i.split('=')
+						n = n.lower()
+						if (n.startswith('a')):
+							mob.setAC(int(v))
+						elif (n.startswith('i')):
+							mob.setInitiative(float(v))
+						elif (n.startswith('h')):
+							if  v.startswith('-') or v.startswith('+'):
+								mob.setHP(self.mobs[mn].getHP() + int(v))
+							else:
+								mob.setHP(int(v))
+						elif (n.startswith('b')):
+							mob.setBonus(int(v))
+					except ValueError:
+						print("Missing or bad value in {}".format(i),file=self.stdout)
+
+				if mn not in self.mobs:
+					self.mobs[mob.getName()] = mob
+					print("{} added".format(mob.getName()))
+				else:
+					print("Mob \'{}\' updated".format(mn),file=self.stdout)
+
+				if self.mobs[mn].getHP() <= 0:
+					print("{} is dead".format(mn))
+					del self.mobs[mn]
 
 			if mn in self.mobs:
 				self.mobs[mn].print(self.stdout)
@@ -313,9 +291,9 @@ if __name__ == '__main__':
 		readline.read_history_file('.gmshell.history')
 	except:
 		with open('.gmshell.history','w'):
-			print("no history to load",file=self.stdout)
+			print("no history to load",file=sys.stderr)
 	GMShell().cmdloop()
 	try: 
 		readline.write_history_file('.gmshell.history')
 	except:
-		print("failed to save history",file=self.stdout)
+		print("failed to save history",file=sys.stderr)
