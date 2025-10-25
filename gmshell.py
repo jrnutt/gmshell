@@ -79,7 +79,7 @@ class GMShell(cmd2.Cmd):
 					if player is not None:
 						player.setAC(a)
 				elif (n.startswith('ini')):
-					init = int(v)
+					init = float(v)
 					if player is not None:
 						player.setInitiative(init)
 				elif (n.startswith('per')):
@@ -152,7 +152,7 @@ class GMShell(cmd2.Cmd):
 								if exists:
 									self.mobs[mn].setAC(a)
 							elif (n.startswith('i')):
-								init = int(v)
+								init = float(v)
 								if exists:
 									self.mobs[mn].setInitiative(init)
 							elif (n.startswith('h')):

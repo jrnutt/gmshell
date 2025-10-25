@@ -2,7 +2,7 @@ import combatant
 import sys
 
 class Player(combatant.Combatant):
-	def __init__(self, n="", pclass="", level='', ac=0, per=0, inv=0, ins=0, init=0, nick = None):
+	def __init__(self, n="", pclass="", level='', ac=0, per=0, inv=0, ins=0, init=0.0, nick = None):
 		self.n = n
 		self.ac = ac
 		self.init = init

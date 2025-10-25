@@ -3,7 +3,7 @@ import secrets
 import sys
 
 class Mob(combatant.Combatant):
-	def __init__(self, n, hp=0, ac=0, init=0, bonus=0):
+	def __init__(self, n, hp=0, ac=0, init=0.0, bonus=0):
 		self.hp = hp
 		self.n = n
 		self.ac = ac

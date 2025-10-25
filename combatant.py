@@ -1,5 +1,5 @@
 class Combatant:
-	def __init__(self, n, hp=0, ac=0, init=0):
+	def __init__(self, n, hp=0, ac=0, init=0.0):
 		self.n = n
 		self.ac = ac
 		self.init = init
