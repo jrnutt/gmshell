@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import cmd, sys
+import cmd2, sys
 import csv
 import pickle
 import readline
@@ -8,7 +8,9 @@ from io import StringIO
 from player import Player
 from mob import Mob
 
-class GMShell(cmd.Cmd):
+from cmd2 import Cmd2ArgumentParser, with_argparser, with_argument_list
+
+class GMShell(cmd2.Cmd):
 	intro = 'Welcome to the GM Shell, a utility to help Game Masters manage game play'
 	prompt = '(cmd) '
 	file = None
@@ -28,18 +30,18 @@ class GMShell(cmd.Cmd):
 				if p.getNick() == pn or p.getName() == pn:
 					return p
 		except:
-			print("error locating player {}".format(pn))
+			print("error locating player {}".format(pn),file=self.stdout)
 
 		return None
-
 
 	def do_player(self, arg):
 		'Set player information'
 
 		try:
-			p = parse(arg.replace("'",'"'))
+			arguments = arg.arg_list
 
-			pn = p.pop(0).lower();
+			pn = cmd2.utils.strip_quotes(arguments.pop(0))
+
 			c = "unknown"
 			l = 0
 			a = 0
@@ -50,7 +52,7 @@ class GMShell(cmd.Cmd):
 			nick = None
 
 			player = self.findPlayer(pn)
-			for i in p:
+			for i in arguments:
 				n,v = i.split('=')
 				n = n.lower()
 				if (n.startswith('c')):
@@ -89,20 +91,19 @@ class GMShell(cmd.Cmd):
 			if player is None:
 				player = Player(pn, pclass=c, level=l, ac=a, per=per, inv=inv, ins=ins, init=init, nick=nick)
 				self.players.append(player)
-				print("Player \'{}\' added".format(pn))
+				print("Player \'{}\' added".format(pn),file=self.stdout)
 			else:
-				print("Player \'{}\' updated".format(pn))
-			player.print(sys.stdout)
+				print("Player \'{}\' updated".format(pn),file=self.stdout)
 		except Exception as ex:
-			print("Got exception {} trying to process {}".format(ex,arg))
+			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
 	def do_mob(self, arg):
 		'Set mob information'
 
 		try: 
-			p = parse(arg)
+			p = arg.arg_list
 
-			mn = p.pop(0).lower();
+			mn = cmd2.utils.strip_quotes(p.pop(0).lower());
 			if len(p) > 0:
 				if p[0] == "delete" and mn in self.mobs:
 					del self.mobs[mn]
@@ -121,7 +122,7 @@ class GMShell(cmd.Cmd):
 						n = r + '-' + str(i)
 					m.setName(n)
 					self.mobs[n] = m
-					print("Mob \'{}\' added".format(n))
+					print("Mob \'{}\' added".format(n),file=self.stdout)
 					mn = n
 				else:
 					a = 0
@@ -144,7 +145,10 @@ class GMShell(cmd.Cmd):
 							elif (n.startswith('h')):
 								h = int(v)
 								if exists:
-									self.mobs[mn].setHP(h)
+									if  v.startswith('-') or v.startswith('+'):
+										self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
+									else:
+										self.mobs[mn].setHP(h)
 							elif (n.startswith('b')):
 								b = int(v)
 								if exists:
@@ -153,24 +157,28 @@ class GMShell(cmd.Cmd):
 								h = int(v)
 								if exists:
 									self.mobs[mn].setHP(self.mobs[mn].getHP() - h)
-								if self.mobs[mn].getHP() < 1:
-									print("{} is dead".format(mn))
-									del self.mobs[mn]
 							elif (n.startswith('+h')):
 								h = int(v)
 								if exists:
 									self.mobs[mn].setHP(self.mobs[mn].getHP() + h)
 						except ValueError:
-							print("Missing or bad value in {}".format(i))
+							print("Missing or bad value in {}".format(i),file=self.stdout)
 
 					if not exists:
 						mob = Mob(mn, ac=a, hp=h, init=init)
 						self.mobs[mob.getName()] = mob
-					print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'))
+
+					print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'),file=self.stdout)
+
+					if self.mobs[mn].getHP() <= 0:
+						print("{} is dead".format(mn))
+						del self.mobs[mn]
+
 			if mn in self.mobs:
-				self.mobs[mn].print(sys.stdout)
+				self.mobs[mn].print(self.stdout)
+
 		except Exception as ex:
-			print("Got exception {} trying to process {}".format(ex,arg))
+			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
 	def do_players(self, arg):
 		'Manage players (list, load, save)'
@@ -180,11 +188,11 @@ class GMShell(cmd.Cmd):
 			match(arg):
 				case "save":
 					c,fn = arg.split(" ")
-					print("saving players to {}".format(fn))
+					print("saving players to {}".format(fn),file=self.stdout)
 					self.save(self.players,fn)
 				case "load":
 					c,fn = arg.split(" ")
-					print("loading players from {}".format(fn))
+					print("loading players from {}".format(fn),file=self.stdout)
 					pl = self.load(fn)
 					if pl is not None:
 						for p in pl:
@@ -193,25 +201,24 @@ class GMShell(cmd.Cmd):
 					self.do_players("list")
 				case _:
 					for p in plist:
-						p.print(sys.stdout)
-						print()
+						p.print(self.stdout)
 
 		except Exception as ex:
-			print("Got exception {} trying to process {}".format(ex,arg))
+			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
 	def save(self, obj, fn):
 		try:
 			with open(fn,"wb") as f:
 				pickle.dump(obj,f)
 		except:
-			print("Did not save file {}".format(fn))
+			print("Did not save file {}".format(fn),file=self.stdout)
 
 	def load(self, fn):
 		try:
 			with open(fn,"rb") as f:
 				return pickle.load(f)
 		except:
-			print("Did not load file {}".format(fn))
+			print("Did not load file {}".format(fn),file=self.stdout)
 			return None
 
 	def do_mobs(self, arg):
@@ -224,11 +231,11 @@ class GMShell(cmd.Cmd):
 			match(args[0]):
 				case "save":
 					f = arg[1]
-					print("saving mobs to {}".format(f))
+					print("saving mobs to {}".format(f),file=self.stdout)
 					self.save(self.mobs,f)
 				case "load":
 					f = arg[1]
-					print("loading mobs from {}".format(f))
+					print("loading mobs from {}".format(f),file=self.stdout)
 					m = self.load(f)
 					if m is not None:
 						self.mobs.update(m)
@@ -240,10 +247,9 @@ class GMShell(cmd.Cmd):
 						m.rollInit()
 				case _:
 					for m in mlist:
-						m.print(sys.stdout)
-						print()
+						m.print(self.stdout)
 		except Exception as ex:
-			print("Got exception {} trying to process {}".format(ex,arg))
+			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
 	def initiative(self, arg):
 		'Manage initiative (list, next, clear|reset, roll (for mobs)'
@@ -262,17 +268,17 @@ class GMShell(cmd.Cmd):
 					self.nextp = 0
 
 				case "next":
-					print(initorder[self.nextp].getName())
+					print(initorder[self.nextp].getName(),file=self.stdout)
 					self.nextp += 1
 
 				case _:
 					for c in initorder[self.nextp:]:
-						print("{} {}".format(c.getName(),c.getInitiative()))
+						print("{} {}".format(c.getName(),c.getInitiative()),file=self.stdout)
 					for c in initorder[:self.nextp]:
-						print("{} {}".format(c.getName(),c.getInitiative()))
+						print("{} {}".format(c.getName(),c.getInitiative()),file=self.stdout)
 
 		except Exception as ex:
-			print("Got exception {} trying to process {}".format(ex,arg))
+			print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
 	def do_initiative(self,arg):
 		self.initiative(arg)
@@ -293,9 +299,9 @@ if __name__ == '__main__':
 		readline.read_history_file('.gmshell.history')
 	except:
 		with open('.gmshell.history','w'):
-			print("no history to load")
+			print("no history to load",file=self.stdout)
 	GMShell().cmdloop()
 	try: 
 		readline.write_history_file('.gmshell.history')
 	except:
-		print("failed to save history")
+		print("failed to save history",file=self.stdout)

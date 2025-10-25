@@ -1,5 +1,6 @@
 import combatant
 import secrets
+import sys
 
 class Mob(combatant.Combatant):
 	def __init__(self, n, hp=0, ac=0, init=0, bonus=0):
@@ -33,9 +34,9 @@ class Mob(combatant.Combatant):
 	def rollInit(self):
 		self.init = secrets.choice(range(20)) + 1 + self.bonus
 
-	def print(self, out):
-		print("Name: {}".format(self.n),file=out)
-		print("AC: {} HP: {} Initiative: {} ".format(self.ac,self.hp, self.init),file=out)
+	def print(self, file=sys.stdout):
+		print("Name: {}".format(self.n),file=file)
+		print("AC: {} HP: {} Initiative: {} ".format(self.ac,self.hp, self.init),file=file)
 
 	def copy(self):
 		return Mob(self.n, self.hp, self.ac, self.init, self.bonus)
