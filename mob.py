@@ -38,5 +38,8 @@ class Mob(combatant.Combatant):
 		print("Name: {}".format(self.n),file=file)
 		print("AC: {} HP: {} Initiative: {} ".format(self.ac,self.hp, self.init),file=file)
 
+	def write(self, file=sys.stdout):
+		print("mob {self.n} ac={self.ac} hp={self.hp} bonus={self.bonus} init={self.init}".format(self=self),file=file)
+
 	def copy(self):
 		return Mob(self.n, self.hp, self.ac, self.init, self.bonus)

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import cmd2, sys
-import csv
 import pickle
 import readline
 
@@ -17,6 +16,9 @@ class GMShell(cmd2.Cmd):
 	nextp = 0
 	players = list()
 	mobs = dict()
+
+	def __init__(self):
+		cmd2.Cmd.__init__(self, include_py=True)
 
 	def do_quit(self, arg):
 		'Exit GM Shell'
@@ -53,6 +55,15 @@ class GMShell(cmd2.Cmd):
 
 			player = self.findPlayer(pn)
 			for i in arguments:
+				if i == 'delete':
+					self.players.remove(player)
+					print("{} deleted".format(player.getName()),file=self.stdout)
+					return
+
+				if i == 'write':
+					player.write(self.stdout)
+					return
+
 				n,v = i.split('=')
 				n = n.lower()
 				if (n.startswith('c')):
@@ -60,7 +71,7 @@ class GMShell(cmd2.Cmd):
 					if player is not None:
 						  player.setClass(c)
 				elif (n.startswith('l')):
-					l = int(v)
+					l = v
 					if player is not None:
 						player.setLevel(l)
 				elif (n.startswith('a')):
@@ -124,6 +135,9 @@ class GMShell(cmd2.Cmd):
 					self.mobs[n] = m
 					print("Mob \'{}\' added".format(n),file=self.stdout)
 					mn = n
+				elif p[0] == "write":
+					self.mobs[mn].write(self.stdout)
+					return
 				else:
 					a = 0
 					h = 0
@@ -139,7 +153,6 @@ class GMShell(cmd2.Cmd):
 									self.mobs[mn].setAC(a)
 							elif (n.startswith('i')):
 								init = int(v)
-
 								if exists:
 									self.mobs[mn].setInitiative(init)
 							elif (n.startswith('h')):
@@ -165,7 +178,7 @@ class GMShell(cmd2.Cmd):
 							print("Missing or bad value in {}".format(i),file=self.stdout)
 
 					if not exists:
-						mob = Mob(mn, ac=a, hp=h, init=init)
+						mob = Mob(mn, ac=a, hp=h, init=init, bonus=b)
 						self.mobs[mob.getName()] = mob
 
 					print("Mob \'{}\' {}".format(mn, 'updated' if exists else 'added'),file=self.stdout)
@@ -186,6 +199,9 @@ class GMShell(cmd2.Cmd):
 			plist = sorted(self.players,reverse=True)
 
 			match(arg):
+				case "write":
+					for p in self.players:
+						p.write(self.stdout)
 				case "save":
 					c,fn = arg.split(" ")
 					print("saving players to {}".format(fn),file=self.stdout)
@@ -229,6 +245,9 @@ class GMShell(cmd2.Cmd):
 				arg = "list"
 			args = arg.split(" ")
 			match(args[0]):
+				case "write":
+					for m in mlist:
+						m.write(self.stdout)
 				case "save":
 					f = arg[1]
 					print("saving mobs to {}".format(f),file=self.stdout)
@@ -288,11 +307,6 @@ class GMShell(cmd2.Cmd):
 
 	def do_next(self, arg):
 		self.initiative("next")
-
-def parse(arg):
-    'Convert a string to an argument tuple'
-    reader = csv.reader(StringIO(arg),delimiter=' ') 
-    return reader.__next__()
 
 if __name__ == '__main__':
 	try:
