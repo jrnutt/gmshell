@@ -61,27 +61,33 @@ class GMShell(cmd2.Cmd):
 					print("player {} does not exist".format(pn), file=self.stdout)
 					return
 
+				if not '=' in i:
+					if (i.startswith('+')):
+						player.addCondition(i.lstrip('+'))
+					elif (i.startswith('-')):
+						player.remCondition(i.lstrip('-'))
 
-				n,v = i.split('=')
-				n = n.lower()
-				if (n.startswith('c')):
-					player.setClass(v)
-				elif (n.startswith('l')):
-					player.setLevel(v)
-				elif (n.startswith('a')):
-					player.setAC(int(v))
-				elif (n.startswith('h')):
-					player.setHP(int(v))
-				elif (n.startswith('ini')):
-					player.setInitiative(float(v))
-				elif (n.startswith('per')):
-					player.setPerception(int(v))
-				elif (n.startswith('inv')):
-					player.setInvestigation(int(v))
-				elif (n.startswith('ins')):
-					player.setInsight(int(v))
-				elif (n.startswith('nick')):
-					player.setNick(v)
+				else:
+					n,v = i.split('=')
+					n = n.lower()
+					if (n.startswith('c')):
+						player.setClass(v)
+					elif (n.startswith('l')):
+						player.setLevel(v)
+					elif (n.startswith('a')):
+						player.setAC(int(v))
+					elif (n.startswith('h')):
+						player.setHP(int(v))
+					elif (n.startswith('ini')):
+						player.setInitiative(float(v))
+					elif (n.startswith('per')):
+						player.setPerception(int(v))
+					elif (n.startswith('inv')):
+						player.setInvestigation(int(v))
+					elif (n.startswith('ins')):
+						player.setInsight(int(v))
+					elif (n.startswith('nick')):
+						player.setNick(v)
 
 			p = self.findPlayer(pn)
 			if self.findPlayer(p) is None:
@@ -147,19 +153,25 @@ class GMShell(cmd2.Cmd):
 
 				for i in p:
 					try:
-						n,v = i.split('=')
-						n = n.lower()
-						if (n.startswith('a')):
-							mob.setAC(int(v))
-						elif (n.startswith('i')):
-							mob.setInitiative(float(v))
-						elif (n.startswith('h')):
-							if  v.startswith('-') or v.startswith('+'):
-								mob.setHP(self.mobs[mn].getHP() + int(v))
-							else:
-								mob.setHP(int(v))
-						elif (n.startswith('b')):
-							mob.setBonus(int(v))
+						if not '=' in i:
+							if (i.startswith('+')):
+								mob.addCondition(i.lstrip('+'))
+							elif (i.startswith('-')):
+								mob.remCondition(i.lstrip('-'))
+						else:
+							n,v = i.split('=')
+							n = n.lower()
+							if (n.startswith('a')):
+								mob.setAC(int(v))
+							elif (n.startswith('i')):
+								mob.setInitiative(float(v))
+							elif (n.startswith('h')):
+								if  v.startswith('-') or v.startswith('+'):
+									mob.setHP(self.mobs[mn].getHP() + int(v))
+								else:
+									mob.setHP(int(v))
+							elif (n.startswith('b')):
+								mob.setBonus(int(v))
 					except ValueError:
 						print("Missing or bad value in {}".format(i),file=self.stdout)
 

@@ -17,11 +17,15 @@ class Mob(combatant.Combatant):
 		self.init = secrets.choice(range(20)) + 1 + self.bonus
 
 	def print(self, file=sys.stdout):
+		super().print(file=file)
 		print("Name: {}".format(self.getName()),file=file)
-		print("AC: {} HP: {} Initiative: {} ".format(self.getAC(),self.getHP(), self.getInitiative()),file=file)
 
 	def write(self, file=sys.stdout):
-		print("mob {self.n} ac={self.ac} hp={self.hp} bonus={self.bonus} init={self.init}".format(self=self),file=file)
+		print("mob {self.n} ac={self.ac} hp={self.hp} bonus={self.bonus} init={self.init}".format(self=self),end=" ",file=file)
+		if len(self.conditions) > 0:
+			for c in self.conditions:
+				print("+{}".format(c), end=" ", file=file)
+		print("",file=file)
 
 	def copy(self):
 		return Mob(self.n, self.hp, self.ac, self.init, self.bonus)

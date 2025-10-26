@@ -47,7 +47,11 @@ class Combatant:
 	def print(self, file=sys.stdout):
 		print("Name: {}".format(self.getName()), file=file)
 		print("AC: {} HP: {} Initiative: {} ".format(self.getAC(), self.getHP(), self.getInitiative()), file=file)
-		print("Conditions: {}".format(self.conditions), file=file)
+		if len(self.conditions) > 0: 
+			print("Conditions: ", end="", file=file)
+			for c in self.conditions:
+				print(c, end=" ", file=file)
+			print("", file=file)
 
 	def __lt__(self, arg):
 		return self.getInitiative() < arg.getInitiative()
