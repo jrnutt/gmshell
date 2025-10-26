@@ -55,7 +55,7 @@ class GMShell(cmd2.Cmd):
 						return
 				else:
 					print("Adding new player {}".format(pn), file=self.stdout)
-					player = Player(pn, pclass='', level='', ac=0, per=0, inv=0, ins=0, init=0.0, nick='')
+					player = Player(pn, cls='', lvl='', ac=0, per=0, inv=0, ins=0, init=0.0, nick='')
 
 				if i in ['delete','write']:
 					print("player {} does not exist".format(pn), file=self.stdout)

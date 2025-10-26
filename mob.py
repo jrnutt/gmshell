@@ -20,12 +20,5 @@ class Mob(combatant.Combatant):
 		super().print(file=file)
 		print("Name: {}".format(self.getName()),file=file)
 
-	def write(self, file=sys.stdout):
-		print("mob {self.n} ac={self.ac} hp={self.hp} bonus={self.bonus} init={self.init}".format(self=self),end=" ",file=file)
-		if len(self.conditions) > 0:
-			for c in self.conditions:
-				print("+{}".format(c), end=" ", file=file)
-		print("",file=file)
-
 	def copy(self):
-		return Mob(self.n, self.hp, self.ac, self.init, self.bonus)
+		return Mob(n=self.n, hp=self.hp, ac=self.ac, init=self.init, bonus=self.bonus, conditions=self.conditions)

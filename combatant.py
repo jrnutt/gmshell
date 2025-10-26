@@ -53,5 +53,19 @@ class Combatant:
 				print(c, end=" ", file=file)
 			print("", file=file)
 
+	def write(self, file=sys.stdout):
+		print("{} {}".format(type(self).__name__.lower(), self.n), end=' ', file =file)
+		d = vars(self)
+		for a in d:
+			if a == 'n':
+				continue
+			if a == 'conditions':
+				for c in d[a]:
+					print("+{}".format(c), end=" ", file=file)
+				continue
+
+			print("{}={}".format(a,d[a]), end=" ", file=file)
+		print()
+
 	def __lt__(self, arg):
 		return self.getInitiative() < arg.getInitiative()

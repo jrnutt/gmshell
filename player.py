@@ -2,10 +2,10 @@ import combatant
 import sys
 
 class Player(combatant.Combatant):
-	def __init__(self, n="", pclass="", level='', hp=0, ac=0, per=0, inv=0, ins=0, init=0.0, nick = None, conditions=[]):
+	def __init__(self, n="", cls="", lvl='', hp=0, ac=0, per=0, inv=0, ins=0, init=0.0, nick = None, conditions=[]):
 		super().__init__(n=n, hp=hp, ac=ac, init=init, conditions=conditions)
-		self.pclass = pclass
-		self.level = level
+		self.cls = cls
+		self.lvl = lvl
 		self.per = per
 		self.inv = inv
 		self.ins = ins
@@ -17,33 +17,23 @@ class Player(combatant.Combatant):
 	def print(self, file=sys.stdout):
 		super().print(file=file)
 		print("Nick: {} ".format(self.getNick()), file=file)
-		print("Class: {} Level: {}".format(self.getClass(), self.getLevel()), file=file)
+		print("Class: {} lvl: {}".format(self.getClass(), self.getLevel()), file=file)
 		print("Passives:", file=file)
 		print("\tPerception:    {}".format(self.getPerception()), file=file)
 		print("\tInvestigation: {}".format(self.getInvestigation()), file=file)
 		print("\tInsight:       {}".format(self.getInsight()), file=file)
 
-	def write(self, file=sys.stdout):
-		print("player '{self.n}' cls={self.pclass} lvl={self.level} ac={self.ac} init={self.init} per={self.per} inv={self.inv} ins={self.ins}".format(self=self),end=" ",file=file)
-		if len(self.nick) > 0:
-			print("nick={}".format(self.nick),end=" ", file=file)
-		if len(self.conditions) > 0:
-			for c in self.conditions:
-				print("+{}".format(c), end=" ", file=file)
-		print("",file=file)
-
-
 	def setClass(self, arg):
-		self.pclass = arg
+		self.cls = arg
 
 	def getClass(self):
-		return self.pclass
+		return self.cls
 
 	def setLevel(self, arg):
-		self.level = arg
+		self.lvl = arg
 
 	def getLevel(self):
-		return self.level
+		return self.lvl
 
 	def setPerception(self, arg):
 		self.per = arg
