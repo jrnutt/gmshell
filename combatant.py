@@ -1,71 +1,90 @@
 import sys
 
 class Combatant:
-	def __init__(self, n, hp=0, ac=0, init=0.0, conditions=[]):
-		self.n = n
-		self.ac = ac
-		self.hp = hp
-		self.init = init
-		self.conditions = set(conditions)
+        def __init__(self, n, hp=0, ac=0, init=0.0, conditions=[]):
+                self.n = n
+                self.ac = ac
+                self.hp = hp
+                self.init = init
+                self.mhp = hp
+                self.conditions = set(conditions)
 
-	def getName(self):
-		return self.n
+        def getName(self):
+                return self.n
 
-	def setName(self, arg):
-		self.n = arg
+        def setName(self, arg):
+                self.n = arg
 
-	def getAC(self):
-		return self.ac
+        def getAC(self):
+                return self.ac
 
-	def setAC(self, arg):
-		self.ac = arg
+        def setAC(self, arg):
+                self.ac = arg
 
-	def getInitiative(self):
-		return self.init
+        def getInitiative(self):
+                return self.init
 
-	def setInitiative(self,arg):
-		self.init = arg
+        def setInitiative(self,arg):
+                self.init = arg
 
-	def setHP(self,arg):
-		self.hp = arg
+        def setHP(self,arg):
+                self.hp = arg
+                if self.hp <= (self.mhp / 2):
+                        self.addCondition('bloodied')
+                else:
+                        self.remCondition('bloodied')
 
-	def getHP(self):
-		return self.hp
+        def getHP(self):
+                return self.hp
 
-	def getConditions(self):
-		return self.conditions
+        def getMaxHP(self):
+                return self.mhp
 
-	def setConditions(self, conditions):
-		self.conditions = conditions
+        def setMaxHP(self, arg):
+                self.hp = arg
+                self.mhp = arg
+                self.remCondition('bloodied')
 
-	def addCondition(self, condition):
-		self.conditions.add(condition)
+        def getConditions(self):
+                return self.conditions
 
-	def remCondition(self, condition):
-		self.conditions.remove(condition)
+        def setConditions(self, conditions):
+                self.conditions = conditions
 
-	def print(self, file=sys.stdout):
-		print("Name: {}".format(self.getName()), file=file)
-		print("AC: {} HP: {} Initiative: {} ".format(self.getAC(), self.getHP(), self.getInitiative()), file=file)
-		if len(self.conditions) > 0: 
-			print("Conditions: ", end="", file=file)
-			for c in self.conditions:
-				print(c, end=" ", file=file)
-			print("", file=file)
+        def addCondition(self, condition):
+                self.conditions.add(condition)
 
-	def write(self, file=sys.stdout):
-		print("{} {}".format(type(self).__name__.lower(), self.n), end=' ', file =file)
-		d = vars(self)
-		for a in d:
-			if a == 'n':
-				continue
-			if a == 'conditions':
-				for c in d[a]:
-					print("+{}".format(c), end=" ", file=file)
-				continue
+        def remCondition(self, condition):
+                if condition in self.conditions:
+                        self.conditions.remove(condition)
 
-			print("{}={}".format(a,d[a]), end=" ", file=file)
-		print()
+        def printSummary(self, full = False, file=sys.stdout):
+                print("Name: {}".format(self.getName()), end=" ", file=file)
+                print("AC: {} HP: {}/{} Initiative: {} ".format(self.getAC(), self.getHP(), self.getMaxHP(), self.getInitiative()), end=" ", file=file)
+                if len(self.conditions) > 0:
+                        if full:
+                                print(file=file)
+                        print("Conditions: ", end="", file=file)
+                        for c in self.conditions:
+                                print(c, end=" ", file=file)
+                print("", file=file)
 
-	def __lt__(self, arg):
-		return self.getInitiative() < arg.getInitiative()
+                        
+        def print(self, file=sys.stdout):
+                self.printSummary(full = True, file=file)
+
+        def write(self, file=sys.stdout):
+                print("{} {}".format(type(self).__name__.lower(), self.n), end=' ', file =file)
+                d = vars(self)
+                for a in d:
+                        if a == 'n':
+                                continue
+                        if a == 'conditions':
+                                for c in d[a]:
+                                        print("+{}".format(c), end=" ", file=file)
+                                continue
+                        print("{}={}".format(a,d[a]), end=" ", file=file)
+                print(file=file)
+
+        def __lt__(self, arg):
+                return self.getInitiative() < arg.getInitiative()
