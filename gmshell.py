@@ -182,10 +182,6 @@ class GMShell(cmd2.Cmd):
                                 else:
                                         print("Mob \'{}\' updated".format(mn),file=self.stdout)
 
-                                if self.mobs[mn].getHP() <= 0:
-                                        print("{} is dead".format(mn))
-                                        del self.mobs[mn]
-
                         if mn in self.mobs:
                                 self.mobs[mn].print(self.stdout)
 
