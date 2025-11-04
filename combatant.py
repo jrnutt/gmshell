@@ -33,6 +33,16 @@ class Combatant:
                         self.addCondition('bloodied')
                 else:
                         self.remCondition('bloodied')
+                        
+                if self.hp <= 0:
+                        self.addCondition('dead')
+                else:
+                        self.remCondition('dead')
+
+                if self.hp <= -self.mhp:
+                        self.addCondition('really dead')
+                else:
+                        self.remCondition('really dead')
 
         def getHP(self):
                 return self.hp
