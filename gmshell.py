@@ -35,7 +35,7 @@ class GMShell(cmd2.Cmd):
                 return None
 
         def do_player(self, arg):
-                'Set player information'
+                'Manage individual player information'
 
                 try:
                         arguments = arg.arg_list
@@ -103,7 +103,7 @@ class GMShell(cmd2.Cmd):
                         print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
         def do_mob(self, arg):
-                'Set mob information'
+                'Manage mob information'
 
                 try: 
                         p = arg.arg_list
@@ -189,6 +189,8 @@ class GMShell(cmd2.Cmd):
                         print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
         def do_hit(self, arg):
+                'Subtract hit points from a player or monster'
+                
                 p = arg.arg_list
                 if len(p) < 2:
                         return
@@ -201,6 +203,8 @@ class GMShell(cmd2.Cmd):
                 return
                 
         def do_heal(self, arg):
+                'Add hit points to a player or monster'
+                
                 p = arg.arg_list
                 if len(p) < 2:
                         return
@@ -213,11 +217,15 @@ class GMShell(cmd2.Cmd):
                 return
                 
         def do_players(self, arg):
-                'Manage players (list, load, save)'
+                'Manage players (list, load, save, clear)'
+                
                 try:
                         plist = sorted(self.players,reverse=True)
 
-                        match(arg):
+                        if len(arg) == 0:
+                                arg = "list"
+                        args = arg.split(" ")
+                        match(args[0]):
                                 case "write":
                                         for p in self.players:
                                                 p.write(self.stdout)
@@ -226,14 +234,10 @@ class GMShell(cmd2.Cmd):
                                         print("saving players to {}".format(fn),file=self.stdout)
                                         self.save(self.players,fn)
                                 case "load":
-                                        c,fn = arg.split(" ")
-                                        print("loading players from {}".format(fn),file=self.stdout)
-                                        pl = self.load(fn)
-                                        if pl is not None:
-                                                for p in pl:
-                                                        if self.findPlayer(p.getName()) is None:
-                                                                self.players.append(p)
-                                        self.do_players("list")
+                                        print("use '@filename' to load a player file", file=self.stdout)
+                                case "clear":
+                                        self.players = list()
+                                        print("player list has been cleared",file=self.stdout)
                                 case _:
                                         for p in plist:
                                                 p.print(self.stdout)
@@ -243,18 +247,12 @@ class GMShell(cmd2.Cmd):
 
         def save(self, obj, fn):
                 try:
-                        with open(fn,"wb") as f:
-                                pickle.dump(obj,f)
-                except:
+                        with open(fn,"w") as f:
+                                for c in obj:
+                                        c.write(f)
+                except Exception as ex:
+                        print(ex)
                         print("Did not save file {}".format(fn),file=self.stdout)
-
-        def load(self, fn):
-                try:
-                        with open(fn,"rb") as f:
-                                return pickle.load(f)
-                except:
-                        print("Did not load file {}".format(fn),file=self.stdout)
-                        return None
 
         def do_mobs(self, arg):
                 'manage monsters (load, save, list, roll, clear)'
@@ -268,16 +266,11 @@ class GMShell(cmd2.Cmd):
                                         for m in mlist:
                                                 m.write(self.stdout)
                                 case "save":
-                                        f = arg[1]
+                                        f = args[1]
                                         print("saving mobs to {}".format(f),file=self.stdout)
-                                        self.save(self.mobs,f)
+                                        self.save(mlist,f)
                                 case "load":
-                                        f = arg[1]
-                                        print("loading mobs from {}".format(f),file=self.stdout)
-                                        m = self.load(f)
-                                        if m is not None:
-                                                self.mobs.update(m)
-                                        self.do_mobs("list")
+                                        print("use '@filename' to load a mob file", file=self.stdout)
                                 case "clear":
                                         self.mobs = dict()
                                 case "roll" | "r" | "ro":
@@ -290,7 +283,6 @@ class GMShell(cmd2.Cmd):
                         print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
         def initiative(self, arg):
-                'Manage initiative (list, next, clear|reset)'
                 try:
                         plist = sorted(self.players,reverse=True)
                         mlist = sorted(self.mobs.values(),reverse=True)
@@ -319,12 +311,18 @@ class GMShell(cmd2.Cmd):
                         print("Got exception {} trying to process {}".format(ex,arg),file=self.stdout)
 
         def do_initiative(self,arg):
+                'Manage initiative (list, next, clear|reset)'
+
                 self.initiative(arg)
 
         def do_init(self, arg):
+                'Manage initiative (list, next, clear|reset)'
+
                 self.initiative(arg)
 
         def do_next(self, arg):
+                'Show next combatant in initiative'
+                
                 self.initiative("next")
 
         def default(self, arg):
