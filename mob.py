@@ -1,5 +1,4 @@
 import combatant
-import secrets
 import sys
 
 class Mob(combatant.Combatant):
@@ -12,9 +11,6 @@ class Mob(combatant.Combatant):
 
         def setBonus(self, arg):
                 self.bonus = arg
-
-        def rollInit(self):
-                self.init = secrets.choice(range(20)) + 1 + self.bonus
 
         def print(self, file=sys.stdout):
                 super().print(file=file)
