@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import cmd2, sys
-import pickle
 import readline
 
 from io import StringIO
@@ -274,6 +273,7 @@ class GMShell(cmd2.Cmd):
                                 case "clear":
                                         self.mobs = dict()
                                 case "roll" | "r" | "ro":
+                                        self.nextp = 0
                                         for m in mlist:
                                                 m.rollInit()
                                 case _:
