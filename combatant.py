@@ -1,4 +1,5 @@
 import sys
+import secrets
 
 class Combatant:
         def __init__(self, n, hp=0, ac=0, init=0.0, conditions=[]):
@@ -68,6 +69,9 @@ class Combatant:
                 if condition in self.conditions:
                         self.conditions.remove(condition)
 
+        def rollInit(self):
+                self.init = secrets.choice(range(1,21)) + self.bonus
+                
         def printSummary(self, full = False, file=sys.stdout):
                 print("Name: {}".format(self.getName()), end=" ", file=file)
                 print("AC: {} HP: {}/{} Initiative: {} ".format(self.getAC(), self.getHP(), self.getMaxHP(), self.getInitiative()), end=" ", file=file)
