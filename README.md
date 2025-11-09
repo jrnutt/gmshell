@@ -7,7 +7,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
 
 ## Commands
 
-* player - This command adds or updates a player character. The first argument is the character name or nickname (nick) which may be surrounded with quotation marks. All the parameters but the first are optional and may be filled in later. They are added in key/value format (name=value). If no parameter is given, the information for that player is displayed. The remaining parameters are:
+* _player_ - This command adds or updates a player character. The first argument is the character name or nickname (nick) which may be surrounded with quotation marks. All the parameters but the first are optional and may be filled in later. They are added in key/value format (name=value). If no parameter is given, the information for that player is displayed. The remaining parameters are:
 
   * cls - The player class (use quotes to include spaces)
   * lvl - The player level
@@ -24,12 +24,12 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
   * +_condition_ - add _condition_ to the player information
   * -_condition_ - remove _condition_ from the player information
 
-* players - This command manages the list of players. 
+* _players_ - This command manages the list of players. 
   * list (or no argument) - List the players entered
   * save - include a filename to save the player list for later
   * clear - clears the player list
   
-* mob - Allows you to enter a creature for combat. The first parameter is the mob name and may include spaces if in quotes. If no additional parameters are provided, the monster information is displayed. The remainder are:
+* _mob_ - Allows you to enter a creature for combat. The first parameter is the mob id and may include spaces if in quotes. If no additional parameters are provided, the monster information is displayed. The remainder are:
 
   * ac - The monster's armor class
   * hp - Allows you to set the monster's hit points to a specific value
@@ -39,6 +39,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
   * delete - remove the monster from the mob list
   * +_condition_ - add _condition_ to the mob information
   * -_condition_ - remove _condition_ from the mob information
+  * copy - Make a copy of this mob. If the mob id contains a '-' followed by a number, each copy will create a new mob with the same id, but with the number incremented by one. So, copying "wolf-1" would create "wolf-2". This is very useful when dealing with a lot of the same monster.
 
 * mobs - Lists the monsters in the current encounter.
 
@@ -47,11 +48,11 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
   * roll - roll initiative for all mobs (also resets initiative order)
   * list (or no argument) - List the current mobs
   
-* heal - given a player or mob id and a number of hit points, adds that many hit points to the combatant's current hitpoints.
+* _heal_ - given a player or mob id and a number of hit points, adds that many hit points to the combatant's current hitpoints.
 
-* hit - given a player or mob id and a number of hit points, subtracts that many hit points from the combatants current hit points.
+* _hit_ - given a player or mob id and a number of hit points, subtracts that many hit points from the combatants current hit points.
 
-* initiative - This is the initiative tracker, it allows you to see the initiative order and step to the next combantant
+* _initiative_ - This is the initiative tracker, it allows you to see the initiative order and step to the next combantant
   
   * list (or no argument) - list combatants in initiative order, starting with the next combatant up
   * next - Step to the next combatant and display their name
@@ -60,3 +61,11 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
 * \@_scriptname_ - loads the script in the file specified by _scriptname_. This can be player or monster information created by the save or write commands. Or it can be an arbitrary list of the above commands.
 
 * _player_ or _mob_ - For already existing player or mob records, you can just use the player or mob id instead of prefixing it with *player* or *mob*.
+
+## Python Requirements
+
+gmshell was written using Python 3.11 and uses mostly libraries supplied with Python. THe one third party library used is [Cmd2](https://github.com/python-cmd2/cmd2) which handles the command processing and provides for command history and the ability to run scripts. It also allows for running shell commands from within gmshell and a number of other useful features.
+
+## Suggestions for Use
+
+This was written for my own use when managing D&D games, so it's tailored to the features I use the most. What I've found works for me is to set up the player information in advance of the session where possible and use the save and @ commands to reload them at game time. Additionally, I try to set up all the mobs for the encounters in advance as their own script files, I can then easily load them using the @ command when it's time for the encounter. Additionally, it's useful to save a script file for each mob so that you can easily reuse them at a future time.

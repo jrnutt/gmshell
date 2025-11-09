@@ -39,18 +39,28 @@ class Player(combatant.Combatant):
         return self.lvl
 
     def setPerception(self, arg):
-        self.per = arg
+        
+        if not arg.isdecimal():
+            print("need a numeric value for perception")
+            return
+        self.per = int(arg)
 
     def getPerception(self):
         return self.per
 
     def setInvestigation(self, arg):
+        if not arg.isdecimal():
+            print("need a numeric value for investigation")
+            return
         self.inv = arg
 
     def getInvestigation(self):
         return self.inv
 
     def setInsight(self, arg):
+        if not arg.isdecimal():
+            print("need a numeric value for insight")
+            return
         self.ins = arg
 
     def getInsight(self):
@@ -61,3 +71,22 @@ class Player(combatant.Combatant):
 
     def setNick(self, arg):
         self.nick = arg
+
+    def set(self, arg):
+        k, v = super().set(arg)
+        match(k):
+            case "cls":
+                self.setClass(v)
+            case "lvl":
+                self.setLevel(v)
+            case "nick":
+                self.setNick(v)
+            case "per":
+                self.setPerception(v)
+            case "inv":
+                self.setInvestigation(v)
+            case "ins":
+                self.setInsight(v)
+            case _:
+                return k, v
+        return k, v

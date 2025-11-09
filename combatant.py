@@ -21,16 +21,26 @@ class Combatant:
         return self.ac
 
     def setAC(self, arg):
-        self.ac = arg
+        if not arg.isnumeric():
+            print("need a numeric value for armor class")
+            return
+        self.ac = int(arg)
 
     def getInitiative(self):
         return self.init
 
     def setInitiative(self, arg):
-        self.init = arg
+        if not arg.isnumeric():
+            print("need a numeric value for initiative")
+            return
+        self.init = float(arg)
 
     def setHP(self, arg):
-        self.hp = arg
+        if not arg.isnumeric():
+            print("Need a numeric value for hit points")
+            return
+
+        self.hp = int(arg)
         if self.hp <= (self.mhp / 2):
             self.addCondition('bloodied')
         else:
@@ -51,8 +61,12 @@ class Combatant:
         return self.mhp
 
     def setMaxHP(self, arg):
-        self.hp = arg
-        self.mhp = arg
+        if not arg.isnumeric():
+            print("Need a numeric value for hit points")
+            return
+
+        self.hp = int(arg)
+        self.mhp = self.hp
         self.remCondition('bloodied')
 
     def getConditions(self):
@@ -69,6 +83,29 @@ class Combatant:
 
     def rollInit(self):
         self.init = secrets.choice(range(1, 21)) + self.bonus
+        print(self.n, self.init)
+
+    def set(self, arg):
+        if '=' in arg:
+            k, v = arg.split('=')
+        else:
+            k = arg
+            v = None
+
+        match(k):
+            case "hp":
+                self.setMaxHP(v)
+            case "ac":
+                self.setAC(v)
+            case "init":
+                self.setInitiative(v)
+            case _ if k.startswith('+'):
+                self.addCondition(k.removeprefix('+'))
+            case _ if k.startswith('-'):
+                self.remCondition(k.removeprefix('-'))
+            case _:
+                return k, v
+        return k, v
 
     def printSummary(self, full=False, file=sys.stdout):
         print("Name: {}".format(self.getName()), end=" ", file=file)

@@ -42,66 +42,38 @@ class GMShell(cmd2.Cmd):
             pn = cmd2.utils.strip_quotes(arguments.pop(0))
 
             player = self.findPlayer(pn)
-            for i in arguments:
+            if len(arguments) > 0:
                 if player is not None:
-                    if i == 'delete':
-                        self.players.remove(player)
-                        print("{} deleted".format(player.getName()),
-                              file=self.stdout)
-                        return
-
-                    if i == 'write':
-                        player.write(self.stdout)
-                        return
+                    match arguments[0]:
+                        case 'delete':
+                            self.players.remove(player)
+                            print("{} deleted".format(player.getName()),
+                                  file=self.stdout)
+                            return
+                        case 'write':
+                            player.write(self.stdout)
+                            return
                 else:
-                    if i in ['delete', 'write']:
-                        print("player {} does not exist".format(pn),
-                              file=self.stdout)
-                        return
-
                     print("Adding new player {}".format(pn), file=self.stdout)
                     player = Player(pn, cls='', lvl='',
                                     ac=0, per=0, inv=0,
                                     ins=0, init=0.0, nick='')
 
-                if '=' not in i:
-                    if (i.startswith('+')):
-                        player.addCondition(i.lstrip('+'))
-                    elif (i.startswith('-')):
-                        player.remCondition(i.lstrip('-'))
+                for i in arguments:
+                    player.set(i)
+
+                p = self.findPlayer(pn)
+                if p is None:
+                    self.players.append(player)
+                    p = player
+                    print("Player \'{}\' added".format(pn),
+                          file=self.stdout)
                 else:
-                    n, v = i.split('=')
-                    n = n.lower()
-                    if (n.startswith('c')):
-                        player.setClass(v)
-                    elif (n.startswith('l')):
-                        player.setLevel(v)
-                    elif (n.startswith('a')):
-                        player.setAC(int(v))
-                    elif (n.startswith('h')):
-                        player.setMaxHP(int(v))
-                    elif (n.startswith('ini')):
-                        player.setInitiative(float(v))
-                    elif (n.startswith('per')):
-                        player.setPerception(int(v))
-                    elif (n.startswith('inv')):
-                        player.setInvestigation(int(v))
-                    elif (n.startswith('ins')):
-                        player.setInsight(int(v))
-                    elif (n.startswith('nick')):
-                        player.setNick(v)
+                    print("Player \'{}\' updated".format(pn),
+                          file=self.stdout)
 
-            p = self.findPlayer(pn)
-            if p is None:
-                self.players.append(player)
-                p = player
-                print("Player \'{}\' added".format(pn),
-                      file=self.stdout)
-            else:
-                print("Player \'{}\' updated".format(pn),
-                      file=self.stdout)
-
-            p.print(file=self.stdout)
+            if player is not None:
+                player.print(file=self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
@@ -116,81 +88,59 @@ class GMShell(cmd2.Cmd):
             mn = cmd2.utils.strip_quotes(p.pop(0).lower())
             if len(p) > 0:
                 if mn in self.mobs:
-                    if p[0] == "delete":
-                        del self.mobs[mn]
-                        print("Mob \'{}\' removed".format(mn))
-                        return
+                    match(p[0]):
+                        case "delete":
+                            del self.mobs[mn]
+                            print("Mob \'{}\' removed".format(mn))
+                            return
 
-                if p[0] == "copy":
-                    m = self.mobs[mn].copy()
-                    i = 1
-                    r = mn
-                    if '-' in mn:
-                        r, c = mn.split('-')
-                    else:
-                        r = mn
-                        c = "0"
-                    if c.isnumeric():
-                        i = int(c)
-                    else:
-                        i = 0
-                    n = r + '-' + str(i)
-                    while (n in self.mobs):
-                        i += 1
-                        n = r + '-' + str(i)
-                    m.setName(n)
-                    self.mobs[n] = m
-                    print("Mob \'{}\' added".format(n),
-                          file=self.stdout)
-                    mn = n
-                    return
-
-                if p[0] == "write":
-                    self.mobs[mn].write(self.stdout)
-                    return
-
-                print("Updating mob {}".format(mn), file=self.stdout)
-                mob = self.mobs[mn]
-            else:
-                mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
-                print("Adding new mob {}".format(mn), file=self.stdout)
-
-            if p[0] in ["copy", "delete", "write"]:
-                print("mob {} does not exist".format(mn), file=self.stdout)
-                return
-
-            for i in p:
-                try:
-                    if '=' not in i:
-                        if (i.startswith('+')):
-                            mob.addCondition(i.lstrip('+'))
-                        elif (i.startswith('-')):
-                            mob.remCondition(i.lstrip('-'))
-                    else:
-                        n, v = i.split('=')
-                        n = n.lower()
-                        if (n.startswith('a')):
-                            mob.setAC(int(v))
-                        elif (n.startswith('i')):
-                            mob.setInitiative(float(v))
-                        elif (n.startswith('h')):
-                            if v.startswith('-') or v.startswith('+'):
-                                mob.setHP(self.mobs[mn].getHP() + int(v))
+                        case "copy":
+                            m = self.mobs[mn].copy()
+                            i = 1
+                            r = mn
+                            if '-' in mn:
+                                r, c = mn.split('-')
                             else:
-                                mob.setMaxHP(int(v))
-                                mob.setHP(int(v))
-                        elif (n.startswith('b')):
-                            mob.setBonus(int(v))
-                except ValueError:
-                    print("Missing or bad value in {}".format(i),
-                          file=self.stdout)
+                                r = mn
+                                c = "0"
+                            if c.isnumeric():
+                                i = int(c)
+                            else:
+                                i = 0
+                            n = r + '-' + str(i)
+                            while (n in self.mobs):
+                                i += 1
+                                n = r + '-' + str(i)
+                            m.setName(n)
+                            self.mobs[n] = m
+                            print("Mob \'{}\' added".format(n),
+                                  file=self.stdout)
+                            mn = n
+                            return
 
-            if mn not in self.mobs:
-                self.mobs[mob.getName()] = mob
-                print("{} added".format(mob.getName()))
-            else:
-                print("Mob \'{}\' updated".format(mn),
-                      file=self.stdout)
+                        case "write":
+                            self.mobs[mn].write(self.stdout)
+                            return
+
+                    print("Updating mob {}".format(mn), file=self.stdout)
+                    mob = self.mobs[mn]
+                else:
+                    mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
+                    print("Adding new mob {}".format(mn), file=self.stdout)
+
+                if p[0] in ["copy", "delete", "write"]:
+                    print("mob {} does not exist".format(mn), file=self.stdout)
+                    return
+
+                for i in p:
+                    mob.set(i)
+
+                if mn not in self.mobs:
+                    self.mobs[mob.getName()] = mob
+                    print("{} added".format(mob.getName()))
+                else:
+                    print("Mob \'{}\' updated".format(mn),
+                          file=self.stdout)
 
             if mn in self.mobs:
                 self.mobs[mn].print(self.stdout)
@@ -230,21 +180,21 @@ class GMShell(cmd2.Cmd):
     def do_players(self, arg):
         'Manage players (list, load, save, clear)'
 
+        args = arg.arg_list
         try:
             plist = sorted(self.players, reverse=True)
 
-            if len(arg) == 0:
-                arg = "list"
-                args = arg.split(" ")
+            if len(args) > 0:
                 match(args[0]):
                     case "write":
                         for p in self.players:
                             p.write(self.stdout)
-                    case "save":
-                        c, fn = arg.split(" ")
-                        print("saving players to {}".format(fn),
+                    case "save" if len(args) > 1:
+                        print("saving players to {}".format(args[1]),
                               file=self.stdout)
-                        self.save(self.players, fn)
+                        self.save(self.players, args[1])
+                    case "save":
+                        print("need a file name to save to")
                     case "load":
                         print("use '@filename' to load a player file",
                               file=self.stdout)
@@ -255,6 +205,9 @@ class GMShell(cmd2.Cmd):
                     case _:
                         for p in plist:
                             p.print(self.stdout)
+            else:
+                for p in plist:
+                    p.print(self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
@@ -275,9 +228,8 @@ class GMShell(cmd2.Cmd):
 
         try:
             mlist = sorted(self.mobs.values(), reverse=True)
-            if len(arg) == 0:
-                arg = "list"
-                args = arg.split(" ")
+            if len(arg) > 0:
+                args = arg.arg_list
                 match(args[0]):
                     case "write":
                         for m in mlist:
@@ -293,12 +245,16 @@ class GMShell(cmd2.Cmd):
                     case "clear":
                         self.mobs = dict()
                     case "roll" | "r" | "ro":
+                        print("rolling initiative for mobs")
                         self.nextp = 0
                         for m in mlist:
                             m.rollInit()
                     case _:
                         for m in mlist:
                             m.print(self.stdout)
+            else:
+                for m in mlist:
+                    m.print(self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),

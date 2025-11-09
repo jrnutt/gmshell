@@ -12,10 +12,14 @@ class Mob(combatant.Combatant):
         return self.bonus
 
     def setBonus(self, arg):
-        self.bonus = arg
+        if not arg.isdecimal():
+            print("initiative bonus must be numeric")
+            return
+        self.bonus = int(arg)
 
     def print(self, file=sys.stdout):
         super().print(file=file)
+        print(file=file)
 
     def copy(self):
         return Mob(n=self.n,
@@ -24,3 +28,12 @@ class Mob(combatant.Combatant):
                    init=self.init,
                    bonus=self.bonus,
                    conditions=self.conditions.copy())
+
+    def set(self, arg):
+        k, v = super().set(arg)
+        match(k):
+            case "bonus":
+                self.setBonus(v)
+            case _:
+                return k, v
+        return k, v
