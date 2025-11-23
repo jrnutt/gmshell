@@ -130,9 +130,13 @@ class Combatant:
         self.printSummary(full=True, file=file)
 
     def write(self, file=sys.stdout):
-        print("{} {}".format(type(self).__name__.lower(), self.n),
+        print("{}".format(type(self).__name__.lower()),
               end=' ',
               file=file)
+        na = self.n
+        if ' ' in na:
+            na = '"' + na + '"'
+        print("{}".format(na), end=' ', file=file)
         d = vars(self)
         for a in d:
             if a == 'n':

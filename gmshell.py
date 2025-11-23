@@ -97,20 +97,23 @@ class GMShell(cmd2.Cmd):
                         case "copy":
                             m = self.mobs[mn].copy()
                             i = 1
-                            r = mn
                             if '-' in mn:
-                                r, c = mn.split('-')
+                                r = mn.split('-')
                             else:
-                                r = mn
-                                c = "0"
-                            if c.isnumeric():
+                                r = (mn, "1")
+                            if not r[len(r)-1].isnumeric():
+                                r.append('1')
+                            c = r[len(r)-1]
+                            try:
                                 i = int(c)
-                            else:
-                                i = 0
-                            n = r + '-' + str(i)
+                            except Exception:
+                                i = 1
+                            r[len(r)-1] = str(i)
+                            n = '-'.join(r)
                             while (n in self.mobs):
                                 i += 1
-                                n = r + '-' + str(i)
+                                r[len(r)-1] = str(i)
+                                n = '-'.join(r)
                             m.setName(n)
                             self.mobs[n] = m
                             print("Mob \'{}\' added".format(n),

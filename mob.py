@@ -20,7 +20,6 @@ class Mob(combatant.Combatant):
 
     def print(self, file=sys.stdout):
         super().print(file=file)
-        print(file=file)
 
     def copy(self):
         return Mob(n=self.n,
