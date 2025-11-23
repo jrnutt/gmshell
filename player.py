@@ -39,29 +39,31 @@ class Player(combatant.Combatant):
         return self.lvl
 
     def setPerception(self, arg):
-        
-        if not arg.isdecimal():
+        try:
+            self.per = int(arg)
+        except Exception:
             print("need a numeric value for perception")
             return
-        self.per = int(arg)
 
     def getPerception(self):
         return self.per
 
     def setInvestigation(self, arg):
-        if not arg.isdecimal():
+        try:
+            self.inv = int(arg)
+        except Exception:
             print("need a numeric value for investigation")
             return
-        self.inv = arg
 
     def getInvestigation(self):
         return self.inv
 
     def setInsight(self, arg):
-        if not arg.isdecimal():
+        try:
+            self.ins = int(arg)
+        except Exception:
             print("need a numeric value for insight")
             return
-        self.ins = arg
 
     def getInsight(self):
         return self.ins

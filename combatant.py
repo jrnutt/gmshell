@@ -21,26 +21,27 @@ class Combatant:
         return self.ac
 
     def setAC(self, arg):
-        if not arg.isnumeric():
-            print("need a numeric value for armor class")
-            return
-        self.ac = int(arg)
+        try:
+            self.ac = int(arg)
+        except Exception:
+            print("Need an integer value for armor class")
 
     def getInitiative(self):
         return self.init
 
     def setInitiative(self, arg):
-        if not arg.isnumeric():
+        try:
+            self.init = float(arg)
+        except Exception:
             print("need a numeric value for initiative")
-            return
-        self.init = float(arg)
 
     def setHP(self, arg):
-        if not arg.isnumeric():
+        try:
+            self.hp = int(arg)
+        except Exception:
             print("Need a numeric value for hit points")
             return
 
-        self.hp = int(arg)
         if self.hp <= (self.mhp / 2):
             self.addCondition('bloodied')
         else:
@@ -61,11 +62,12 @@ class Combatant:
         return self.mhp
 
     def setMaxHP(self, arg):
-        if not arg.isnumeric():
+        try:
+            self.hp = int(arg)
+        except Exception:
             print("Need a numeric value for hit points")
             return
 
-        self.hp = int(arg)
         self.mhp = self.hp
         self.remCondition('bloodied')
 
@@ -108,7 +110,7 @@ class Combatant:
         return k, v
 
     def printSummary(self, full=False, file=sys.stdout):
-        print("Name: {}".format(self.getName()), end=" ", file=file)
+        print("{}".format(self.getName()), end=" ", file=file)
         print("AC: {} HP: {}/{} Initiative: {} ".format(self.getAC(),
                                                         self.getHP(),
                                                         self.getMaxHP(),
@@ -122,6 +124,7 @@ class Combatant:
                 for c in self.conditions:
                     print(c, end=" ", file=file)
                 print("", file=file)
+        print(file=file)
 
     def print(self, file=sys.stdout):
         self.printSummary(full=True, file=file)

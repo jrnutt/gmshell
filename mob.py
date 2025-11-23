@@ -12,10 +12,11 @@ class Mob(combatant.Combatant):
         return self.bonus
 
     def setBonus(self, arg):
-        if not arg.isdecimal():
+        try:
+            self.bonus = int(arg)
+        except Exception:
             print("initiative bonus must be numeric")
             return
-        self.bonus = int(arg)
 
     def print(self, file=sys.stdout):
         super().print(file=file)
