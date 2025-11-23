@@ -73,7 +73,7 @@ class GMShell(cmd2.Cmd):
                           file=self.stdout)
 
             if player is not None:
-                player.print(file=self.stdout)
+                player.print(file=self.stdout, summary=False)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
@@ -207,7 +207,7 @@ class GMShell(cmd2.Cmd):
                               file=self.stdout)
                     case _:
                         for p in plist:
-                            p.print(self.stdout)
+                            p.print(self.stdout, summary=False)
             else:
                 for p in plist:
                     p.print(self.stdout)
@@ -279,14 +279,14 @@ class GMShell(cmd2.Cmd):
                     self.nextp = 0
 
                 case "next":
-                    initorder[self.nextp].printSummary(file=self.stdout)
+                    initorder[self.nextp].print(file=self.stdout)
                     self.nextp += 1
 
                 case _:
                     for c in initorder[self.nextp:]:
-                        c.printSummary(full=False, file=self.stdout)
+                        c.print(file=self.stdout)
                     for c in initorder[:self.nextp]:
-                        c.printSummary(full=False, file=self.stdout)
+                        c.print(file=self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),

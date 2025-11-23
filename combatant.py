@@ -109,7 +109,7 @@ class Combatant:
                 return k, v
         return k, v
 
-    def printSummary(self, full=False, file=sys.stdout):
+    def print(self, file=sys.stdout):
         print("{}".format(self.getName()), end=" ", file=file)
         print("AC: {} HP: {}/{} Initiative: {} ".format(self.getAC(),
                                                         self.getHP(),
@@ -118,14 +118,10 @@ class Combatant:
               end=" ", file=file)
 
         if len(self.conditions) > 0:
-            if full:
-                print("Conditions: ", end="", file=file)
-                for c in self.conditions:
-                    print(c, end=" ", file=file)
+            print("Conditions: ", end="", file=file)
+            for c in self.conditions:
+                print(c, end=" ", file=file)
         print("", file=file)
-
-    def print(self, file=sys.stdout):
-        self.printSummary(full=True, file=file)
 
     def write(self, file=sys.stdout):
         print("{}".format(type(self).__name__.lower()),

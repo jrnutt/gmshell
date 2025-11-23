@@ -16,7 +16,7 @@ class Player(combatant.Combatant):
         if nick is None:
             self.nick = n
 
-    def print(self, file=sys.stdout, summary=False):
+    def print(self, file=sys.stdout, summary=True):
         super().print(file=file)
         if not summary:
             if len(self.getNick()) > 0 and not self.getNick().isspace():
