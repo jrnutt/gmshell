@@ -119,12 +119,10 @@ class Combatant:
 
         if len(self.conditions) > 0:
             if full:
-                print(file=file)
                 print("Conditions: ", end="", file=file)
                 for c in self.conditions:
                     print(c, end=" ", file=file)
-                print("", file=file)
-        print(file=file)
+        print("", file=file)
 
     def print(self, file=sys.stdout):
         self.printSummary(full=True, file=file)

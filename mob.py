@@ -18,7 +18,7 @@ class Mob(combatant.Combatant):
             print("initiative bonus must be numeric")
             return
 
-    def print(self, file=sys.stdout):
+    def print(self, file=sys.stdout, summary=False):
         super().print(file=file)
 
     def copy(self):

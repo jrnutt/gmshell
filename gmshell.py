@@ -163,7 +163,7 @@ class GMShell(cmd2.Cmd):
             c = self.mobs[p[0]]
         if c is not None:
             c.setHP(c.getHP() - int(p[1]))
-            c.print(self.stdout)
+            c.print(self.stdout, summary=True)
         return
 
     def do_heal(self, arg):
@@ -177,7 +177,7 @@ class GMShell(cmd2.Cmd):
             c = self.mobs[p[0]]
         if c is not None:
             c.setHP(c.getHP() + int(p[1]))
-            c.print(self.stdout)
+            c.print(self.stdout, summary=True)
         return
 
     def do_players(self, arg):
@@ -284,9 +284,9 @@ class GMShell(cmd2.Cmd):
 
                 case _:
                     for c in initorder[self.nextp:]:
-                        c.printSummary(file=self.stdout)
+                        c.printSummary(full=False, file=self.stdout)
                     for c in initorder[:self.nextp]:
-                        c.printSummary(file=self.stdout)
+                        c.printSummary(full=False, file=self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),

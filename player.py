@@ -16,15 +16,20 @@ class Player(combatant.Combatant):
         if nick is None:
             self.nick = n
 
-    def print(self, file=sys.stdout):
+    def print(self, file=sys.stdout, summary=False):
         super().print(file=file)
-        print("Nick: {} ".format(self.getNick()), file=file)
-        print("Class: {} lvl: {}".format(self.getClass(), self.getLevel()),
-              file=file)
-        print("Passives:", file=file)
-        print("\tPerception:    {}".format(self.getPerception()), file=file)
-        print("\tInvestigation: {}".format(self.getInvestigation()), file=file)
-        print("\tInsight:       {}".format(self.getInsight()), file=file)
+        if not summary:
+            if len(self.getNick()) > 0 and not self.getNick().isspace():
+                print("Nick: {} ".format(self.getNick()), file=file)
+            print("Class: {} lvl: {}".format(self.getClass(), self.getLevel()),
+                  file=file)
+            print("Passives:", file=file)
+            print("\tPerception:    {}".format(self.getPerception()),
+                  file=file)
+            print("\tInvestigation: {}".format(self.getInvestigation()),
+                  file=file)
+            print("\tInsight:       {}".format(self.getInsight()),
+                  file=file)
 
     def setClass(self, arg):
         self.cls = arg
