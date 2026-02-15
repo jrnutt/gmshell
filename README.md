@@ -41,7 +41,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
   * -_condition_ - remove _condition_ from the mob information
   * copy - Make a copy of this mob. If the mob id contains a '-' followed by a number, each copy will create a new mob with the same id, but with the number incremented by one. So, copying "wolf-1" would create "wolf-2". This is very useful when dealing with a lot of the same monster.
 
-* mobs - Lists the monsters in the current encounter.
+* _mobs_ - Lists the monsters in the current encounter.
 
   * clear - removes all the mobs from combat
   * save - include a filename to save the mob list for later
