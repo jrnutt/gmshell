@@ -145,7 +145,7 @@ class Combatant:
         """Print formatted combatant information to a file."""
         print("{}".format(self.getName()), end=" ", file=file)
         if len(self.getNick()) > 0 and not self.getNick().isspace():
-            print("Nick: {} ".format(self.getNick()), file=file)
+            print("({}) ".format(self.getNick()), end=" ", file=file)
         print("AC: {} HP: {}/{} Initiative: {} ".format(self.getAC(),
                                                         self.getHP(),
                                                         self.getMaxHP(),

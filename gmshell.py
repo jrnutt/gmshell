@@ -15,6 +15,7 @@ class GMShell(cmd2.Cmd):
     prompt = '(cmd) '
     file = None
     nextp = 0
+    round = 0
     combatants = set()
     players = list()
     mobs = dict()
@@ -187,18 +188,18 @@ class GMShell(cmd2.Cmd):
     def initiative(self, arg):
         """Manage initiative."""
         try:
-            plist = sorted(self.players, reverse=True)
-            mlist = sorted(self.mobs.values(), reverse=True)
-            combatants = list(plist)
-            combatants.extend(mlist)
-            if len(combatants) < 1:
+            if len(self.combatants) < 1:
                 return
-            initorder = sorted(combatants, reverse=True)
+            initorder = sorted(self.combatants, reverse=True)
             self.nextp = self.nextp % len(initorder)
+            if self.nextp == 0:
+                self.round += 1
+                print("Starting round {}".format(self.round), file=self.stdout)
 
             match (arg):
                 case "clear" | "reset":
                     self.nextp = 0
+                    self.round = 1
 
                 case "next":
                     initorder[self.nextp].print(file=self.stdout)
@@ -227,14 +228,11 @@ class GMShell(cmd2.Cmd):
         self.initiative("next")
 
     def default(self, arg):
-        """Try to determine what the user actual wants."""
-        t = None
-        c = self.findCombatant(arg.command)
+        """Try to determine what the user actually wants."""
+        c = self.findCombatant(arg.command, (Player, Mob))
         if c is not None:
             t = "player" if isinstance(c, Player) else "mob"
-            print(t)
             line = t + " " + arg.command_and_args
-            print(line)
             s = cmd2.parsing.StatementParser().parse(line)
             self.onecmd(statement=s)
         else:
