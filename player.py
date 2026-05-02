@@ -91,8 +91,6 @@ class Player(combatant.Combatant):
                 self.setClass(v)
             case "lvl":
                 self.setLevel(v)
-            case "nick":
-                self.setNick(v)
             case "per":
                 self.setPerception(v)
             case "inv":

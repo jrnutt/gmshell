@@ -125,6 +125,8 @@ class Combatant:
             v = None
 
         match(k):
+            case "nick":
+                self.setNick(v)
             case "hp":
                 self.setMaxHP(v)
             case "ac":

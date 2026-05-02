@@ -32,6 +32,7 @@ class Mob(combatant.Combatant):
     def copy(self):
         """Copy a mob to a new instance."""
         return Mob(n=self.n,
+                   nick=self.nick,
                    hp=self.hp,
                    ac=self.ac,
                    init=self.init,
