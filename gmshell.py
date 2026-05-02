@@ -60,6 +60,35 @@ class GMShell(cmd2.Cmd):
                         case 'write':
                             c.write(self.stdout)
                             return
+                        case 'copy':
+                            m = c.copy()
+                            i = 1
+                            if '-' in n:
+                                r = n.split('-')
+                            else:
+                                r = (n, "1")
+                            if not r[len(r)-1].isnumeric():
+                                r.append('1')
+                            c = r[len(r)-1]
+                            try:
+                                i = int(c)
+                            except Exception:
+                                i = 1
+                            r[len(r)-1] = str(i)
+                            n = '-'.join(r)
+                            m.setName(n)
+                            m.write()
+                            print(m in self.combatants)
+                            while (m in self.combatants):
+                                i += 1
+                                r[len(r)-1] = str(i)
+                                n = '-'.join(r)
+                                m.setName(n)
+                            self.combatants.add(m)
+                            print("Mob \'{}\' added".format(n),
+                                  file=self.stdout)
+                            return
+
                 else:
                     if t is Player:
                         print("Adding new player {}".format(n),
