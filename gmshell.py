@@ -15,7 +15,7 @@ class GMShell(cmd2.Cmd):
     prompt = '(cmd) '
     file = None
     nextp = 0
-    round = 0
+    round = 1
     combatants = set()
     players = list()
     mobs = dict()
@@ -221,9 +221,6 @@ class GMShell(cmd2.Cmd):
                 return
             initorder = sorted(self.combatants, reverse=True)
             self.nextp = self.nextp % len(initorder)
-            if self.nextp == 0:
-                self.round += 1
-                print("Starting round {}".format(self.round), file=self.stdout)
 
             match (arg):
                 case "clear" | "reset":
@@ -233,6 +230,9 @@ class GMShell(cmd2.Cmd):
                 case "next":
                     initorder[self.nextp].print(file=self.stdout)
                     self.nextp += 1
+                    if self.nextp == len(self.combatants):
+                        self.round += 1
+                        print("Starting round {}".format(self.round), file=self.stdout)
 
                 case _:
                     for c in initorder[self.nextp:]:
