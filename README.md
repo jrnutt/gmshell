@@ -26,7 +26,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
 
 * _players_ - This command manages the list of players. 
   * list (or no argument) - List the players entered
-  * save - include a filename to save the player list for later
+  * write - write the player list to stdout, can be redirected to a file
   * clear - clears the player list
   
 * _mob_ - Allows you to enter a creature for combat. The first parameter is the mob id and may include spaces if in quotes. If no additional parameters are provided, the monster information is displayed. The remainder are:
@@ -37,6 +37,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
   * init - sets the monster's initiative
   * write - display the monster information in a format that can be reloaded later.
   * delete - remove the monster from the mob list
+  * nick - The mob's nickname useful for managing multiple copies of one mob
   * +_condition_ - add _condition_ to the mob information
   * -_condition_ - remove _condition_ from the mob information
   * copy - Make a copy of this mob. If the mob id contains a '-' followed by a number, each copy will create a new mob with the same id, but with the number incremented by one. So, copying "wolf-1" would create "wolf-2". This is very useful when dealing with a lot of the same monster.
@@ -44,7 +45,7 @@ gmshell is a simple command driven way to manage combat for D&D. It tracks a sub
 * _mobs_ - Lists the monsters in the current encounter.
 
   * clear - removes all the mobs from combat
-  * save - include a filename to save the mob list for later
+  * write - write the mobs to stdout, can be redirected to a file
   * roll - roll initiative for all mobs (also resets initiative order)
   * list (or no argument) - List the current mobs
   
