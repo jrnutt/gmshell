@@ -125,14 +125,14 @@ class GMShell(cmd2.Cmd):
 
     def do_mob(self, arg):
         """Manage mob information."""
-        self.mngcombatant(arg, Mob)                
+        self.mngcombatant(arg, Mob)
 
     def do_hit(self, arg):
         """Subtract hit points from a player or monster."""
         p = arg.arg_list
         if len(p) < 2:
             return
-        c = self.findCombatant(p[0])
+        c = self.findCombatant(p[0], (Player, Mob))
         if c is not None:
             c.setHP(c.getHP() - int(p[1]))
             c.print(self.stdout, summary=True)
@@ -143,7 +143,7 @@ class GMShell(cmd2.Cmd):
         p = arg.arg_list
         if len(p) < 2:
             return
-        c = self.findCombatant(p[0])
+        c = self.findCombatant(p[0], (Player,Mob))
         if c is not None:
             c.setHP(c.getHP() + int(p[1]))
             c.print(self.stdout, summary=True)
