@@ -77,9 +77,7 @@ class GMShell(cmd2.Cmd):
                             r[len(r)-1] = str(i)
                             n = '-'.join(r)
                             m.setName(n)
-                            m.write()
-                            print(m in self.combatants)
-                            while (m in self.combatants):
+                            while (self.findCombatant(n, (Player, Mob)) is not None):
                                 i += 1
                                 r[len(r)-1] = str(i)
                                 n = '-'.join(r)
