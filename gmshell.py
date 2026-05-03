@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Tool for managing RPG game play."""
 import cmd2
 import sys
 import readline
@@ -8,99 +9,64 @@ from mob import Mob
 
 
 class GMShell(cmd2.Cmd):
+    """Command driven utility for managing RPG game play."""
+
     intro = 'Welcome to the GM Shell, a utility to help manage game play'
     prompt = '(cmd) '
     file = None
     nextp = 0
+    round = 1
+    combatants = set()
     players = list()
     mobs = dict()
 
     def __init__(self):
+        """Initialize the Cmd super class."""
         cmd2.Cmd.__init__(self, include_py=True)
 
     def do_quit(self, arg):
-        'Exit GM Shell'
+        """Exit GM Shell."""
         return True
 
-    def findPlayer(self, pn):
-
+    def findCombatant(self, pn, t=Player):
+        """Find a combatant by nick name."""
         try:
-            for p in self.players:
-                if p.getNick() == pn or p.getName() == pn:
+            for p in self.combatants:
+                if (p.getNick() == pn or p.getName() == pn) and \
+                   isinstance(p, t):
                     return p
-        except Exception:
-            print("error locating player {}".format(pn), self.stdout)
-
+            return None
+        except Exception as ex:
+            print("error locating combatant {}".format(pn), file=self.stdout)
+            print(ex)
         return None
 
-    def do_player(self, arg):
-        'Manage individual player information'
-
+    def mngcombatant(self, arg, t):
+        """Add a combatant."""
         try:
             arguments = arg.arg_list
 
-            pn = cmd2.utils.strip_quotes(arguments.pop(0))
+            n = cmd2.utils.strip_quotes(arguments.pop(0))
 
-            player = self.findPlayer(pn)
+            c = self.findCombatant(n, t)
             if len(arguments) > 0:
-                if player is not None:
+                if c is not None:
                     match arguments[0]:
                         case 'delete':
-                            self.players.remove(player)
-                            print("{} deleted".format(player.getName()),
+                            self.combatants.remove(c)
+                            print("{} deleted".format(c.getName()),
                                   file=self.stdout)
                             return
                         case 'write':
-                            player.write(self.stdout)
+                            c.write(self.stdout)
                             return
-                else:
-                    print("Adding new player {}".format(pn), file=self.stdout)
-                    player = Player(pn, cls='', lvl='',
-                                    ac=0, per=0, inv=0,
-                                    ins=0, init=0.0, nick='')
-
-                for i in arguments:
-                    player.set(i)
-
-                p = self.findPlayer(pn)
-                if p is None:
-                    self.players.append(player)
-                    p = player
-                    print("Player \'{}\' added".format(pn),
-                          file=self.stdout)
-                else:
-                    print("Player \'{}\' updated".format(pn),
-                          file=self.stdout)
-
-            if player is not None:
-                player.print(file=self.stdout, summary=False)
-
-        except Exception as ex:
-            print("Got exception {} trying to process {}".format(ex, arg),
-                  file=self.stdout)
-
-    def do_mob(self, arg):
-        'Manage mob information'
-
-        try:
-            p = arg.arg_list
-
-            mn = cmd2.utils.strip_quotes(p.pop(0).lower())
-            if len(p) > 0:
-                if mn in self.mobs:
-                    match(p[0]):
-                        case "delete":
-                            del self.mobs[mn]
-                            print("Mob \'{}\' removed".format(mn))
-                            return
-
-                        case "copy":
-                            m = self.mobs[mn].copy()
+                        case 'copy':
+                            m = c.copy()
                             i = 1
-                            if '-' in mn:
-                                r = mn.split('-')
+                            if '-' in n:
+                                r = n.split('-')
                             else:
-                                r = (mn, "1")
+                                r = (n, "1")
                             if not r[len(r)-1].isnumeric():
                                 r.append('1')
                             c = r[len(r)-1]
@@ -110,113 +76,121 @@ class GMShell(cmd2.Cmd):
                                 i = 1
                             r[len(r)-1] = str(i)
                             n = '-'.join(r)
-                            while (n in self.mobs):
+                            m.setName(n)
+                            while (self.findCombatant(n, (Player, Mob)) is not None):
                                 i += 1
                                 r[len(r)-1] = str(i)
                                 n = '-'.join(r)
-                            m.setName(n)
-                            self.mobs[n] = m
+                                m.setName(n)
+                            self.combatants.add(m)
                             print("Mob \'{}\' added".format(n),
                                   file=self.stdout)
-                            mn = n
                             return
 
-                        case "write":
-                            self.mobs[mn].write(self.stdout)
-                            return
-
-                    print("Updating mob {}".format(mn), file=self.stdout)
-                    mob = self.mobs[mn]
                 else:
-                    mob = Mob(mn, ac=0, hp=0, init=0.0, bonus=0)
-                    print("Adding new mob {}".format(mn), file=self.stdout)
+                    if t is Player:
+                        print("Adding new player {}".format(n),
+                              file=self.stdout)
+                        c = Player(n, cls='', lvl='',
+                                   ac=0, per=0, inv=0,
+                                   ins=0, init=0.0, nick='')
+                    else:
+                        print("Adding new mob {}".format(n), file=self.stdout)
+                        c = Mob(n, nick='', ac=0, hp=0, init=0.0, bonus=0)
 
-                if p[0] in ["copy", "delete", "write"]:
-                    print("mob {} does not exist".format(mn), file=self.stdout)
-                    return
+                for i in arguments:
+                    c.set(i)
 
-                for i in p:
-                    mob.set(i)
-
-                if mn not in self.mobs:
-                    self.mobs[mob.getName()] = mob
-                    print("{} added".format(mob.getName()))
+                lc = self.findCombatant(n, t)
+                if lc is None:
+                    self.combatants.add(c)
+                    print("combatant \'{}\' added".format(n),
+                          file=self.stdout)
                 else:
-                    print("Mob \'{}\' updated".format(mn),
+                    print("combatant \'{}\' updated".format(n),
                           file=self.stdout)
 
-            if mn in self.mobs:
-                self.mobs[mn].print(self.stdout)
+            if c is not None:
+                c.print(file=self.stdout, summary=False)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
                   file=self.stdout)
 
-    def do_hit(self, arg):
-        'Subtract hit points from a player or monster'
+    def do_player(self, arg):
+        """Manage individual player information."""
+        self.mngcombatant(arg, Player)
 
+    def do_mob(self, arg):
+        """Manage mob information."""
+        self.mngcombatant(arg, Mob)
+
+    def do_hit(self, arg):
+        """Subtract hit points from a player or monster."""
         p = arg.arg_list
         if len(p) < 2:
             return
-        c = self.findPlayer(p[0])
-        if c is None and p[0] in self.mobs:
-            c = self.mobs[p[0]]
+        c = self.findCombatant(p[0], (Player, Mob))
         if c is not None:
             c.setHP(c.getHP() - int(p[1]))
             c.print(self.stdout, summary=True)
         return
 
     def do_heal(self, arg):
-        'Add hit points to a player or monster'
-
+        """Add hit points to a player or monster."""
         p = arg.arg_list
         if len(p) < 2:
             return
-        c = self.findPlayer(p[0])
-        if c is None and p[0] in self.mobs:
-            c = self.mobs[p[0]]
+        c = self.findCombatant(p[0], (Player,Mob))
         if c is not None:
             c.setHP(c.getHP() + int(p[1]))
             c.print(self.stdout, summary=True)
         return
 
-    def do_players(self, arg):
-        'Manage players (list, load, save, clear)'
-
+    def pcandmobs(self, arg, t):
+        """Perform base combatant operations."""
         args = arg.arg_list
         try:
-            plist = sorted(self.players, reverse=True)
-
             if len(args) > 0:
                 match(args[0]):
                     case "write":
-                        for p in self.players:
-                            p.write(self.stdout)
+                        for c in self.combatants:
+                            if isinstance(c, t):
+                                c.write(self.stdout)
                     case "save" if len(args) > 1:
-                        print("saving players to {}".format(args[1]),
+                        print("saving to {}".format(args[1]),
                               file=self.stdout)
-                        self.save(self.players, args[1])
+                        self.save(self.combatants, args[1])
                     case "save":
                         print("need a file name to save to")
                     case "load":
                         print("use '@filename' to load a player file",
                               file=self.stdout)
                     case "clear":
-                        self.players = list()
-                        print("player list has been cleared",
+                        for c in self.combatants:
+                            if isinstance(c, t):
+                                self.combatants.remove(c)
+                        print("list has been cleared",
                               file=self.stdout)
                     case _:
-                        for p in plist:
-                            p.print(self.stdout, summary=False)
+                        for c in self.combatants:
+                            if isinstance(c, t):
+                                c.print(self.stdout, summary=False)
             else:
-                for p in plist:
-                    p.print(self.stdout)
+                for c in self.combatants:
+                    if isinstance(c, t):
+                        c.print(self.stdout)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
                   file=self.stdout)
 
+    def do_players(self, arg):
+        """Manage players (list, load, save, clear)."""
+        self.pcandmobs(arg, Player)
+
     def save(self, obj, fn):
+        """Save a combatant to a file."""
         try:
             with open(fn, "w") as f:
                 for c in obj:
@@ -227,60 +201,36 @@ class GMShell(cmd2.Cmd):
                   file=self.stdout)
 
     def do_mobs(self, arg):
-        'manage monsters (load, save, list, roll, clear)'
-
-        try:
-            mlist = sorted(self.mobs.values(), reverse=True)
-            if len(arg) > 0:
-                args = arg.arg_list
-                match(args[0]):
-                    case "write":
-                        for m in mlist:
-                            m.write(self.stdout)
-                    case "save":
-                        f = args[1]
-                        print("saving mobs to {}".format(f),
-                              file=self.stdout)
-                        self.save(mlist, f)
-                    case "load":
-                        print("use '@filename' to load a mob file",
-                              file=self.stdout)
-                    case "clear":
-                        self.mobs = dict()
-                    case "roll" | "r" | "ro":
-                        print("rolling initiative for mobs")
-                        self.nextp = 0
-                        for m in mlist:
-                            m.rollInit()
-                    case _:
-                        for m in mlist:
-                            m.print(self.stdout)
-            else:
-                for m in mlist:
-                    m.print(self.stdout)
-
-        except Exception as ex:
-            print("Got exception {} trying to process {}".format(ex, arg),
-                  file=self.stdout)
+        """Manage monsters (load, save, list, roll, clear)."""
+        self.pcandmobs(arg, Mob)
+        args = arg.arg_list
+        if len(args) > 0:
+            if args[0] in ["roll", "r", "ro"]:
+                print("rolling initiative for mobs")
+                self.nextp = 0
+                for m in self.combatants:
+                    if isinstance(m, Mob):
+                        m.rollInit()
 
     def initiative(self, arg):
+        """Manage initiative."""
         try:
-            plist = sorted(self.players, reverse=True)
-            mlist = sorted(self.mobs.values(), reverse=True)
-            combatants = list(plist)
-            combatants.extend(mlist)
-            if len(combatants) < 1:
+            if len(self.combatants) < 1:
                 return
-            initorder = sorted(combatants, reverse=True)
+            initorder = sorted(self.combatants, reverse=True)
             self.nextp = self.nextp % len(initorder)
 
             match (arg):
                 case "clear" | "reset":
                     self.nextp = 0
+                    self.round = 1
 
                 case "next":
                     initorder[self.nextp].print(file=self.stdout)
                     self.nextp += 1
+                    if self.nextp == len(self.combatants):
+                        self.round += 1
+                        print("Starting round {}".format(self.round), file=self.stdout)
 
                 case _:
                     for c in initorder[self.nextp:]:
@@ -293,27 +243,22 @@ class GMShell(cmd2.Cmd):
                   file=self.stdout)
 
     def do_initiative(self, arg):
-        'Manage initiative (list, next, clear|reset)'
-
+        """Manage initiative (list, next, clear|reset)."""
         self.initiative(arg)
 
     def do_init(self, arg):
-        'Manage initiative (list, next, clear|reset)'
+        """Manage initiative (list, next, clear|reset)."""
         self.initiative(arg)
 
     def do_next(self, arg):
-        'Show next combatant in initiative'
+        """Show next combatant in initiative."""
         self.initiative("next")
 
     def default(self, arg):
-        t = None
-        c = self.findPlayer(arg.command)
+        """Try to determine what the user actually wants."""
+        c = self.findCombatant(arg.command, (Player, Mob))
         if c is not None:
-            t = "player"
-        elif arg.command in self.mobs:
-            t = "mob"
-
-        if t is not None:
+            t = "player" if isinstance(c, Player) else "mob"
             line = t + " " + arg.command_and_args
             s = cmd2.parsing.StatementParser().parse(line)
             self.onecmd(statement=s)
