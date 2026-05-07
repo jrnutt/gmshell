@@ -14,8 +14,8 @@ class GMShell(cmd2.Cmd):
     intro = 'Welcome to the GM Shell, a utility to help manage game play'
     prompt = '(cmd) '
     file = None
-    nextp = 0
-    round = 1
+    current = None
+    round = 0
     combatants = set()
     players = list()
     mobs = dict()
@@ -53,7 +53,7 @@ class GMShell(cmd2.Cmd):
                 if c is not None:
                     match arguments[0]:
                         case 'delete':
-                            self.combatants.remove(c)
+                            c.addCondition("dead3")
                             print("{} deleted".format(c.getName()),
                                   file=self.stdout)
                             return
@@ -77,7 +77,8 @@ class GMShell(cmd2.Cmd):
                             r[len(r)-1] = str(i)
                             n = '-'.join(r)
                             m.setName(n)
-                            while (self.findCombatant(n, (Player, Mob)) is not None):
+                            while (self.findCombatant(n, (Player, Mob))
+                                   is not None):
                                 i += 1
                                 r[len(r)-1] = str(i)
                                 n = '-'.join(r)
@@ -141,7 +142,7 @@ class GMShell(cmd2.Cmd):
         p = arg.arg_list
         if len(p) < 2:
             return
-        c = self.findCombatant(p[0], (Player,Mob))
+        c = self.findCombatant(p[0], (Player, Mob))
         if c is not None:
             c.setHP(c.getHP() + int(p[1]))
             c.print(self.stdout, summary=True)
@@ -215,32 +216,46 @@ class GMShell(cmd2.Cmd):
     def initiative(self, arg):
         """Manage initiative."""
         try:
-            if len(self.combatants) < 1:
-                return
             initorder = sorted(self.combatants, reverse=True)
-            self.nextp = self.nextp % len(initorder)
 
             match (arg):
                 case "clear" | "reset":
-                    self.nextp = 0
-                    self.round = 1
+                    self.last = None
+                    self.round = 0
 
                 case "next":
-                    initorder[self.nextp].print(file=self.stdout)
-                    self.nextp += 1
-                    if self.nextp == len(self.combatants):
+                    found = False
+                    cur = None
+                    for c in initorder:
+                        if found:
+                            if "dead3" not in c.getConditions():
+                                cur = c
+                                found = False
+                        else:
+                            found = (self.current == c)
+                    if cur is None:
                         self.round += 1
-                        print("Starting round {}".format(self.round), file=self.stdout)
+                        self.current = initorder[0]
+                        print("Starting round {}".format(self.round),
+                              file=self.stdout)
+                    else:
+                        self.current = cur
 
+                    self.current.print(file=self.stdout)
                 case _:
-                    for c in initorder[self.nextp:]:
-                        c.print(file=self.stdout)
-                    for c in initorder[:self.nextp]:
-                        c.print(file=self.stdout)
+                    self.print_initiative(initorder)
 
         except Exception as ex:
             print("Got exception {} trying to process {}".format(ex, arg),
                   file=self.stdout)
+
+    def print_initiative(self, iorder):
+        """Print the current initiative."""
+        for c in iorder:
+            if "dead3" not in c.getConditions():
+                print("*" if c == self.current else " ", end=" ",
+                      file=self.stdout)
+                c.print(file=self.stdout)
 
     def do_initiative(self, arg):
         """Manage initiative (list, next, clear|reset)."""

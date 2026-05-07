@@ -71,10 +71,10 @@ class Combatant:
             self.addCondition('dead')
         else:
             self.remCondition('dead')
+            self.remCondition('dead3')
+
         if self.hp <= -self.mhp:
-            self.addCondition('really dead')
-        else:
-            self.remCondition('really dead')
+            self.addCondition('dead3')
 
     def getHP(self):
         """Get hit points."""
