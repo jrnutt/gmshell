@@ -168,9 +168,11 @@ class GMShell(cmd2.Cmd):
                         print("use '@filename' to load a player file",
                               file=self.stdout)
                     case "clear":
+                        rl = set()
                         for c in self.combatants:
                             if isinstance(c, t):
-                                self.combatants.remove(c)
+                                rl.add(c)
+                        self.combatants = self.combatants - rl
                         print("list has been cleared",
                               file=self.stdout)
                     case _:
