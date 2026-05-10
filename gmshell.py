@@ -172,7 +172,7 @@ class GMShell(cmd2.Cmd):
                         for c in self.combatants:
                             if isinstance(c, t):
                                 rl.add(c)
-                        self.combatants = self.combatants - rl
+                        self.combatants -= rl
                         print("list has been cleared",
                               file=self.stdout)
                     case _:
