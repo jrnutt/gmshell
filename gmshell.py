@@ -222,8 +222,8 @@ class GMShell(cmd2.Cmd):
 
             match (arg):
                 case "clear" | "reset":
-                    self.last = None
                     self.round = 0
+                    self.current = initorder[0]
 
                 case "next":
                     found = False
