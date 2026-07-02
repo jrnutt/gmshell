@@ -46,7 +46,7 @@ class GMShell(cmd2.Cmd):
         try:
             arguments = arg.arg_list
 
-            n = cmd2.utils.strip_quotes(arguments.pop(0))
+            n = cmd2.string_utils.strip_quotes(arguments.pop(0))
 
             c = self.findCombatant(n, t)
             if len(arguments) > 0:
