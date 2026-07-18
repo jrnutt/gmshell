@@ -66,7 +66,7 @@ class GMShell(cmd2.Cmd):
                             if '-' in n:
                                 r = n.split('-')
                             else:
-                                r = (n, "1")
+                                r = [n, "1"]
                             if not r[len(r)-1].isnumeric():
                                 r.append('1')
                             c = r[len(r)-1]
